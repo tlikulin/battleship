@@ -1,0 +1,14 @@
+CFLAGS=-Wall -Wextra -pedantic -std=c99
+SRCS=$(wildcard src/*.c)
+OBJS=$(patsubst src/%.c,src/%.o,$(SRCS))
+
+.PHONY: clean depend
+
+battleship: $(OBJS)
+	$(CC) -o bin/battleship $(OBJS) 
+
+clean:
+	rm bin/battleship $(OBJ)
+depend:
+	makedepend $(SRCS) -Y
+# DO NOT DELETE
