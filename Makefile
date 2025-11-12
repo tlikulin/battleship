@@ -8,7 +8,11 @@ battleship: $(OBJS)
 	$(CC) -o bin/battleship $(OBJS) 
 
 clean:
-	rm bin/battleship $(OBJ)
+	rm -f bin/battleship $(OBJS)
 depend:
 	makedepend $(SRCS) -Y
 # DO NOT DELETE
+
+src/board.o: src/board.h
+src/main.o: src/board.h src/menu.h
+src/menu.o: src/menu.h
