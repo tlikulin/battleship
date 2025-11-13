@@ -4,17 +4,11 @@
 * Provides functionality for displaying menus and getting user choice.
 */
 
-/* Main menu: 
-* 1.) Play a new game
-* 2.) Load already saved game
-* 3.) Exit the game
-*/
-
-enum choice_main_menu {
-    CHOICE_MM_NONE      = 0,
-    CHOICE_MM_NEW_GAME  = 1,
-    CHOICE_MM_LOAD      = 2,
-    CHOICE_MM_EXIT      = 3,
+enum choice_main_menu {         // Main menu: 
+    CHOICE_MM_NONE      = 0,    //
+    CHOICE_MM_NEW_GAME  = 1,    // 1.) Play a new game
+    CHOICE_MM_LOAD      = 2,    // 2.) Load already saved game
+    CHOICE_MM_EXIT      = 3,    // 3.) Exit the game
 };
 
 /* Load menu:
@@ -35,6 +29,3 @@ enum choice_load_menu {
 
 // display the main menu and ask for input until a valid choice is entered
 int run_main_menu(void);
-
-// Enter an int from keyboard
-int get_int(void);

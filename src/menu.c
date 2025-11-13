@@ -1,6 +1,7 @@
 #include <stdio.h>
 
 #include "menu.h"
+#include "utility.h"
 
 // basckslashes must be ecaped, so not aligned properly here :(
 const char* BATTLESHIP_LOGO =
@@ -34,12 +35,5 @@ int run_main_menu(void) {
         choice = get_int();
     }
 
-    return choice;
-}
-
-int get_int(void) {
-    int choice;
-    printf("Your choice: ");
-    scanf(" %d", &choice);
     return choice;
 }

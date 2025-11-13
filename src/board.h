@@ -8,6 +8,9 @@
 #define GRID_SIZE 8
 // if defined, there will be no -+-+- .. +- between rows
 #define NO_ROWS_SEPARATOR
+// Ships: 1x 4, 2x 3, 2x 2, 2x 1
+#define SHIPS_TOTAL 7
+extern const int SHIPS_SIZES[SHIPS_TOTAL];
 
 // the values a tile can have
 typedef enum tile_type {
@@ -23,9 +26,8 @@ typedef struct board {
     unsigned char grid[GRID_SIZE][GRID_SIZE];
 } board_t;
 
-// create a new board and initializes it to some empty state
-board_t create_empty_board(void);
-// prints the repr of the board to stdout w/ column&row headings and separators
-void print_board(board_t* board);
-// get the character representation for a given tile type
-char tile_to_char(tile_type_t tile);
+// initializes a board (clears and then populates with ships)
+void init_board(board_t*);
+// prints the repr of the board to stdout with column and row headings and separators
+void print_board(board_t*);
+
