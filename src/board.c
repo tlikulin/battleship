@@ -10,12 +10,12 @@ const int SHIPS_SIZES[SHIPS_TOTAL] = {5, 4, 3, 2, 2};
 
 // get the character representation of a given tile type
 char tile_to_char(tile_type_t);
+// Checks if the given coords are within the board
+int is_inbounds(int, int);
 // create a new board and initializes it to some empty state
 void fill_board_with_water(board_t*);
 // fills the board with the ships randomly
 void populate_board(board_t*);
-// checks if coords are inbounds
-int is_inbounds(int y, int x);
 // checks if a cell is touching (incl. diagonally and itself) a ship tile
 int is_touching_ship(board_t*, int, int);
 // checks if a ship with given type, orientation and coords can be placed
@@ -122,7 +122,7 @@ void print_board(board_t* board) {
     printf("\n");
     // print the grid with separators
     for (int y = 0; y < GRID_SIZE; ++y) {
-        printf("%c ", 'a' + y);
+        printf("%c ", 'A' + y);
         // '|'-separated tiles
         for (int x = 0; x < GRID_SIZE - 1; ++x) {
             char tile = tile_to_char(board->grid[y][x]);
