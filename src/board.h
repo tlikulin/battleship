@@ -8,8 +8,8 @@
 #define GRID_SIZE 8
 // if defined, there will be no -+-+- .. +- between rows
 #define NO_ROWS_SEPARATOR
-// Ships: 1x 4, 2x 3, 2x 2, 2x 1
-#define SHIPS_TOTAL 7
+// Ships: 5 4 3 2 2
+#define SHIPS_TOTAL 5
 extern const int SHIPS_SIZES[SHIPS_TOTAL];
 
 // the values a tile can have

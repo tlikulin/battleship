@@ -4,14 +4,14 @@
 
 #include "board.h"
 
-// LOCAL HEPLERS, not public API
+// LOCAL:
 
-const int SHIPS_SIZES[SHIPS_TOTAL] = {4, 3, 3, 2, 2, 1, 1};
+const int SHIPS_SIZES[SHIPS_TOTAL] = {5, 4, 3, 2, 2};
 
 // get the character representation of a given tile type
 char tile_to_char(tile_type_t);
 // create a new board and initializes it to some empty state
-void clear_board(board_t*);
+void fill_board_with_water(board_t*);
 // fills the board with the ships randomly
 void populate_board(board_t*);
 // checks if coords are inbounds
@@ -83,7 +83,7 @@ void place_ship(board_t* board, int ship_size, int is_horizontal, int y, int x) 
     }
 }
 
-void clear_board(board_t* board) {
+void fill_board_with_water(board_t* board) {
     for (int y = 0; y < GRID_SIZE; ++y)
         for (int x = 0; x < GRID_SIZE; ++x)
             board->grid[y][x] = TILE_WATER;
@@ -98,16 +98,18 @@ void populate_board(board_t* board) {
         ship_size = SHIPS_SIZES[i];
         do { // generate random coords and orientation until fits
             is_horizontal = rand() % 2;
-            y = rand() % GRID_SIZE;
-            x = rand() % GRID_SIZE;
+            y = rand() % (GRID_SIZE - ship_size + 1);
+            x = rand() % (GRID_SIZE - ship_size + 1);
         } while (!can_place_ship(board, ship_size, is_horizontal, y, x));
 
         place_ship(board, ship_size, is_horizontal, y, x);
     }
 }
 
+// EXPOSED in board.h:
+
 void init_board(board_t* board) {
-    clear_board(board);
+    fill_board_with_water(board);
     populate_board(board);
 }
 

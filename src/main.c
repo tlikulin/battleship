@@ -14,10 +14,12 @@ int main(void) {
         exit_game(0);
         break;
     case CHOICE_MM_NEW_GAME:
+        printf("\x1B[2J\x1B[1;1H"); // clear the screen (ANSI codes)
         printf("Player's board:\n\n");
         print_board(&player_board);
         printf("\n");
         break;
+    // unexpected, run_main_menu() supposed to allways return one of above
     default:
         exit_game(1);
         break;

@@ -3,6 +3,8 @@
 
 #include "utility.h"
 
+// LOCAL:
+
 // reads all extra characters left in stdin until end of line or EOF
 void flush_stdin(void) {
     int c;
@@ -10,6 +12,8 @@ void flush_stdin(void) {
         c = getchar();
     while (c != EOF && c != '\n');
 }
+
+// EXPOSED in utility.h:
 
 // TODO: replace scanf
 int get_int(void) {

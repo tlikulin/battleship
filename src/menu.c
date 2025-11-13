@@ -3,6 +3,8 @@
 #include "menu.h"
 #include "utility.h"
 
+// LOCAL:
+
 // basckslashes must be ecaped, so not aligned properly here :(
 const char* BATTLESHIP_LOGO =
     " ____        _   _   _          _     _            \n"
@@ -16,6 +18,8 @@ const char* MAIN_MENU_CHOICES =
     "1.) Play a new game \n"
     "2.) Load already saved game \n"
     "3.) Exit the game \n";
+
+// EXPOSED in menu.c:
 
 int run_main_menu(void) {
     int choice = CHOICE_MM_NONE;
