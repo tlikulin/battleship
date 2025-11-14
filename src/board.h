@@ -13,21 +13,32 @@
 extern const int SHIPS_SIZES[SHIPS_TOTAL];
 
 // the values a tile can have
-typedef enum tile_type {
+enum tile_type {
     TILE_NONE = 0,
     TILE_WATER,
     TILE_WATER_HIT,
     TILE_SHIP,
     TILE_SHIP_HIT
-} tile_type_t;
+} ;
 
 // a board storing a grid (2d array) of tiles
 typedef struct board {
     unsigned char grid[GRID_SIZE][GRID_SIZE];
 } board_t;
 
-// initializes a board (clears and then populates with ships)
-void init_board(board_t*);
-// prints the repr of the board to stdout with column and row headings and separators
-void print_board(board_t*);
+// represents the outcome of a shot; returned by take_shot()
+enum shot_result {
+    SHOT_INVALID = 0,
+    SHOT_ALREADY,
+    SHOT_MISSED,
+    SHOT_HIT,
+    SHOT_SHIP_DOWN,
+};
 
+// initializes a board (clears and then populates with ships)
+void init_board(board_t* board);
+// prints the repr of the board to stdout with column and row headings and separators
+void print_board(board_t* board);
+// shoot at the board at given coords
+// returns the outcome (descibed at the enum)
+enum shot_result take_shot(board_t* board, int y, int x);

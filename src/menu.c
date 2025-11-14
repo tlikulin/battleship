@@ -5,7 +5,8 @@
 
 // LOCAL:
 
-// basckslashes must be ecaped, so not aligned properly here :(
+// the logo displayed in the main menu
+// Original is in extra/battleship_figlet.txt
 const char* BATTLESHIP_LOGO =
     " ____        _   _   _          _     _            \n"
     "| __ )  __ _| |_| |_| | ___ ___| |__ (_)_ __       \n"
@@ -24,12 +25,12 @@ const char* MAIN_MENU_CHOICES =
 int run_main_menu(void) {
     int choice = CHOICE_MM_NONE;
 
-    printf("\x1B[2J\x1B[1;1H"); // clear the screen (ANSI codes)
+    clear_screen();
     printf("%s%s", BATTLESHIP_LOGO, MAIN_MENU_CHOICES);
     choice = get_int();
 
     while (choice != CHOICE_MM_NEW_GAME && choice != CHOICE_MM_EXIT) {
-        printf("\x1B[2J\x1B[1;1H"); // clear the screen (ANSI codes)
+        clear_screen();
         printf("%s%s", BATTLESHIP_LOGO, MAIN_MENU_CHOICES);
 
         if (choice == CHOICE_MM_LOAD)

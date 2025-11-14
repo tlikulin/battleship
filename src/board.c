@@ -6,25 +6,45 @@
 
 // LOCAL:
 
-const int SHIPS_SIZES[SHIPS_TOTAL] = {5, 4, 3, 2, 2};
+enum direction {
+    DIRECTION_NONE = 0,
+    DIRECTION_UP,
+    DIRECTION_DOWN,
+    DIRECTION_LEFT,
+    DIRECTION_RIGHT,
+};
+
+#define DIRECTIONS_TOTAL 4
+const int DIRECTIONS[DIRECTIONS_TOTAL] = {DIRECTION_UP, DIRECTION_DOWN, DIRECTION_LEFT, DIRECTION_RIGHT};
 
 // get the character representation of a given tile type
-char tile_to_char(tile_type_t);
+char tile_to_char(enum tile_type tile);
 // Checks if the given coords are within the board
-int is_inbounds(int, int);
-// create a new board and initializes it to some empty state
-void fill_board_with_water(board_t*);
+int is_inbounds(int y, int x);
 // fills the board with the ships randomly
-void populate_board(board_t*);
+void populate_board(board_t* board);
 // checks if a cell is touching (incl. diagonally and itself) a ship tile
-int is_touching_ship(board_t*, int, int);
+int is_touching_ship(board_t* board, int y , int x);
 // checks if a ship with given type, orientation and coords can be placed
-int can_place_ship(board_t*, int, int, int, int);
+int can_place_ship(board_t* board, int ship_size, int is_horizontal, int y, int x);
 // places a ship with given type, orientation and coords 
 // overrides old tiles, can_place_ship is expected to be run before
-void place_ship(board_t*, int, int, int, int);
+void place_ship(board_t* board, int ship_size, int is_horizontal, int y, int x);
+// checks if the ship containting the given point has been fully destroyed
+int is_ship_downis_ship_down(board_t* board, int y, int x);
+// recursive helper for is_ship_down(), should not be called independently
+int is_ship_down_inner(board_t* board, int y, int x, enum direction direction);
+// puts discovered water tiles aroung the ship containing the given coord
+// suposet to run after checking if there is indeed a sunk ship there (func above)
+void discover_around_sunk_ship(board_t* board, int y, int x);
+// recursive helper for is_ship_down(), should not be called independently
+void discover_around_sunk_ship_inner(board_t* board, int y, int x, enum direction direction);
+// Changes the tile from WATER to WATER_HIT, if can't - does nothing
+void discover_water(board_t* board, int y, int x);
+// modify *y_ptr, *x_ptr as in a step in the given direction
+void move_in_direction(int* y_ptr, int* x_ptr, enum direction direction);
 
-char tile_to_char(tile_type_t tile) {
+char tile_to_char(enum tile_type tile) {
     switch (tile) {
     case TILE_WATER:
         return ' ';
@@ -60,7 +80,8 @@ int can_place_ship(board_t* board, int ship_size, int is_horizontal, int y, int 
                 return 0;
             }
         }
-    } else {
+    } 
+    else {
         for (int dy = 0; dy < ship_size; ++dy) {
             if (!is_inbounds(y + dy, x) || is_touching_ship(board, y + dy, x)) {
                 return 0;
@@ -76,17 +97,12 @@ void place_ship(board_t* board, int ship_size, int is_horizontal, int y, int x) 
         for (int dx = 0; dx < ship_size; ++dx) {
             board->grid[y][x + dx] = TILE_SHIP;
         }
-    } else {
+    } 
+    else {
         for (int dy = 0; dy < ship_size; ++dy) {
             board->grid[y + dy][x] = TILE_SHIP;
         }
     }
-}
-
-void fill_board_with_water(board_t* board) {
-    for (int y = 0; y < GRID_SIZE; ++y)
-        for (int x = 0; x < GRID_SIZE; ++x)
-            board->grid[y][x] = TILE_WATER;
 }
 
 void populate_board(board_t* board) {
@@ -106,10 +122,110 @@ void populate_board(board_t* board) {
     }
 }
 
+int is_ship_down(board_t* board, int y, int x) {
+    if (!is_inbounds(y, x) || board->grid[y][x] != TILE_SHIP_HIT) {
+        return 0;
+    }
+
+    for (int i = 0; i < DIRECTIONS_TOTAL; ++i) {
+        if (!is_ship_down_inner(board, y, x, DIRECTIONS[i])) {
+            return 0;
+        }
+    }
+
+    return 1;
+}
+
+int is_ship_down_inner(board_t* board, int y, int x, enum direction direction) {
+    if (!is_inbounds(y, x)) {
+        return 1;
+    }
+
+    switch (board->grid[y][x]) {
+    case TILE_WATER:
+    case TILE_WATER_HIT:
+        return 1;
+    case TILE_SHIP_HIT:
+        move_in_direction(&y, &x, direction);
+        return is_ship_down_inner(board, y, x, direction);
+    case TILE_SHIP:
+    default:
+        return 0;
+    }
+}
+
+void discover_around_sunk_ship(board_t* board, int y, int x) {
+    if (!is_inbounds(y, x) || board->grid[y][x] != TILE_SHIP_HIT) {
+        return;
+    }
+
+    for (int i = 0; i < DIRECTIONS_TOTAL; ++i) {
+        discover_around_sunk_ship_inner(board, y, x, DIRECTIONS[i]);
+    }
+}
+
+void discover_around_sunk_ship_inner(board_t* board, int y, int x, enum direction direction) {
+    if (!is_inbounds(y, x)) {
+        return;
+    }
+
+    discover_water(board, y, x);
+
+    switch (direction) {
+    case DIRECTION_DOWN:
+    case DIRECTION_UP:
+        discover_water(board, y, x - 1);
+        discover_water(board, y, x + 1);
+        break;
+    case DIRECTION_LEFT:
+    case DIRECTION_RIGHT:
+        discover_water(board, y - 1, x);
+        discover_water(board, y + 1, x);
+        break;
+    default:
+        break;
+    }
+
+    if (board->grid[y][x] == TILE_SHIP_HIT) {
+        move_in_direction(&y, &x, direction);
+        discover_around_sunk_ship_inner(board, y, x, direction);
+    }
+}
+
+void discover_water(board_t* board, int y, int x) {
+    if (is_inbounds(y, x) && board->grid[y][x] == TILE_WATER) {
+        board->grid[y][x] = TILE_WATER_HIT;
+    }
+}
+
+void move_in_direction(int* y_ptr, int* x_ptr, enum direction direction) {
+    switch (direction) {
+    case DIRECTION_UP:
+        *y_ptr -= 1;
+        break;
+    case DIRECTION_DOWN:
+        *y_ptr  += 1;
+        break;
+    case DIRECTION_LEFT:
+        *x_ptr  -= 1;
+        break;
+    case DIRECTION_RIGHT:
+        *x_ptr  += 1;
+        break;
+    default:
+        return;
+    }
+}
+
 // EXPOSED in board.h:
 
+const int SHIPS_SIZES[SHIPS_TOTAL] = {5, 4, 3, 2, 2};
+
 void init_board(board_t* board) {
-    fill_board_with_water(board);
+    for (int y = 0; y < GRID_SIZE; ++y)
+        for (int x = 0; x < GRID_SIZE; ++x)
+            board->grid[y][x] = TILE_WATER;
+
     populate_board(board);
 }
 
@@ -139,5 +255,31 @@ void print_board(board_t* board) {
         }
         printf("-\n");
 #endif
+    }
+}
+
+enum shot_result take_shot(board_t* board, int y, int x) {
+    if (!is_inbounds(y, x)) { // out-of-bounds
+        return SHOT_INVALID;
+    }
+
+    switch (board->grid[y][x]) {
+    case TILE_WATER_HIT:
+    case TILE_SHIP_HIT:
+        return SHOT_ALREADY; // already fired at
+    case TILE_WATER:
+        board->grid[y][x] = TILE_WATER_HIT;
+        return SHOT_MISSED;
+    case TILE_SHIP:
+        board->grid[y][x] = TILE_SHIP_HIT;
+        if (is_ship_down(board, y, x)) {
+            discover_around_sunk_ship(board, y, x);
+            return SHOT_SHIP_DOWN;
+        } 
+        else {
+            return SHOT_HIT;
+        }
+    default:
+        return SHOT_INVALID; // invalid tile type
     }
 }
