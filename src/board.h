@@ -6,8 +6,6 @@
 
 // should work in the range [?, 9]
 #define GRID_SIZE 8
-// if defined, there will be no -+-+- .. +- between rows
-#define NO_ROWS_SEPARATOR
 // Ships: 5 4 3 2 2
 #define SHIPS_TOTAL 5
 extern const int SHIPS_SIZES[SHIPS_TOTAL];
@@ -39,6 +37,8 @@ enum shot_result {
 void init_board(board_t* board);
 // prints the repr of the board to stdout with column and row headings and separators
 void print_board(board_t* board);
+// prints 2 boards side-to-side with provided titles (if any)
+void print_2_boards(board_t* board1, board_t* board2, const char* title1, const char* title2);
 // shoot at the board at given coords
 // returns the outcome (descibed at the enum)
 enum shot_result take_shot(board_t* board, int y, int x);

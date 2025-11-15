@@ -17,6 +17,8 @@ enum direction {
 #define DIRECTIONS_TOTAL 4
 const int DIRECTIONS[DIRECTIONS_TOTAL] = {DIRECTION_UP, DIRECTION_DOWN, DIRECTION_LEFT, DIRECTION_RIGHT};
 
+const char* BOARDS_BORDERLINE = "      #      ";
+
 // get the character representation of a given tile type
 char tile_to_char(enum tile_type tile);
 // Checks if the given coords are within the board
@@ -43,6 +45,12 @@ void discover_around_sunk_ship_inner(board_t* board, int y, int x, enum directio
 void discover_water(board_t* board, int y, int x);
 // modify *y_ptr, *x_ptr as in a step in the given direction
 void move_in_direction(int* y_ptr, int* x_ptr, enum direction direction);
+// prints space-separated column numbers above the boards
+// e.g. "  1 2 3 4 5 6 7 8"
+void print_column_numbers(void);
+// prints a row of the board with given index, includes letter at the beggining
+// e.g. "C  | | | |s|O| | "
+void print_board_row(board_t* board, int y);
 
 char tile_to_char(enum tile_type tile) {
     switch (tile) {
@@ -108,7 +116,12 @@ void place_ship(board_t* board, int ship_size, int is_horizontal, int y, int x) 
 void populate_board(board_t* board) {
     int ship_size, is_horizontal;
     int y, x;
-    srand(time(NULL));
+    // seed the rng the first time the function is called
+    static int was_seeded = 0;
+    if (!was_seeded) {
+        srand(time(NULL));
+        was_seeded = 1;
+    }
 
     for (int i = 0; i < SHIPS_TOTAL; ++i) {
         ship_size = SHIPS_SIZES[i];
@@ -217,6 +230,25 @@ void move_in_direction(int* y_ptr, int* x_ptr, enum direction direction) {
     }
 }
 
+// GRID_SIZE must be 1-digit for the numbers to align
+void print_column_numbers(void) {
+    printf("  ");
+    for (int i = 1; i < GRID_SIZE; ++i) {
+        printf("%d ", i); 
+    }
+    printf("%d", GRID_SIZE); // no trailing space 
+}
+
+void print_board_row(board_t* board, int y) {
+    printf("%c ", 'A' + y); // 'A' + 0 is 'A', 'A' + 1 is 'B', etc.
+    // '|'-separated tiles
+    for (int x = 0; x < GRID_SIZE - 1; ++x) {
+        printf("%c|", tile_to_char(board->grid[y][x]));
+    }
+    // last column, has no separator after
+    printf("%c", tile_to_char(board->grid[y][GRID_SIZE  - 1]));
+}
+
 // EXPOSED in board.h:
 
 const int SHIPS_SIZES[SHIPS_TOTAL] = {5, 4, 3, 2, 2};
@@ -231,30 +263,45 @@ void init_board(board_t* board) {
 
 void print_board(board_t* board) {
     // print column numbers
-    printf("  ");
-    for (int i = 1; i <= GRID_SIZE; ++i) {
-        printf("%d ", i);
+    print_column_numbers();
+    printf("\n");
+    // + print the grid with row letters
+    for (int y = 0; y < GRID_SIZE; ++y) {
+        print_board_row(board, y);
+        printf("\n");
+    }
+}
+
+// implementation doesn't just use print_board() twice
+// because they would be printed one below the other instead
+// which was not desired
+void print_2_boards(board_t* board1, board_t* board2, const char* title1, const char* title2) {
+    // print titles above the boards (if any)
+    if (title1) {
+        printf("   %s", title1);
+    }
+    if (title2) {
+        printf("\x1B[1;%dH", 2 * GRID_SIZE + 18); // uses ANSI escape code to move cursor to right position
+        printf("%s", title2);
     }
     printf("\n");
-    // print the grid with separators
+    // print 1 line separating titles from boards
+    // includes the board-separating element
+    for (int i = 0; i < GRID_SIZE * 2 + 1; ++i) printf(" ");
+    printf("%s\n", BOARDS_BORDERLINE);
+
+    // print column numbers
+    print_column_numbers();
+    printf("%s", BOARDS_BORDERLINE);
+    print_column_numbers();
+    printf("\n");
+
+    // print the grids with separators
     for (int y = 0; y < GRID_SIZE; ++y) {
-        printf("%c ", 'A' + y);
-        // '|'-separated tiles
-        for (int x = 0; x < GRID_SIZE - 1; ++x) {
-            char tile = tile_to_char(board->grid[y][x]);
-            printf("%c|", tile);
-        }
-        // last column, has no separator after
-        char tile = tile_to_char(board->grid[y][GRID_SIZE  - 1]);
-        printf("%c\n", tile);
-        // rows separator: "-+-+ ... -", not needed after last row
-#ifndef NO_ROWS_SEPARATOR
-        if (y == GRID_SIZE - 1) break;
-        for (int i = 0; i < GRID_SIZE - 1; ++i) {
-            printf("-+");
-        }
-        printf("-\n");
-#endif
+        print_board_row(board1, y);
+        printf("%s", BOARDS_BORDERLINE);
+        print_board_row(board2, y);
+        printf("\n");
     }
 }
 
