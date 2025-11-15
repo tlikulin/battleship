@@ -1,4 +1,4 @@
 Makefile.*
 src/*.o
 /bin
-.clangd
+.clang*

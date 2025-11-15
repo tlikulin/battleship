@@ -15,10 +15,9 @@ const char* BATTLESHIP_LOGO =
     "|____/ \\__,_|\\__|\\__|_|\\___|___|_| |_|_| .__/  \n"
     "                                       |_|         \n";
 
-const char* MAIN_MENU_CHOICES = 
-    "1.) Play a new game \n"
-    "2.) Load already saved game \n"
-    "3.) Exit the game \n";
+const char* MAIN_MENU_CHOICES = "1.) Play a new game \n"
+                                "2.) Load already saved game \n"
+                                "3.) Exit the game \n";
 
 // EXPOSED in menu.c:
 
@@ -36,7 +35,7 @@ int run_main_menu(void) {
         if (choice == CHOICE_MM_LOAD) {
             printf("Not yet implemented!\n");
         }
-        
+
         printf("You made an invalid choice, try again.\n");
 
         choice = get_int();

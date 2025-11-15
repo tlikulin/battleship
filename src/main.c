@@ -17,9 +17,9 @@ int main(void) {
     }
 
     // main app loop (infinite)
-    while (1) { 
+    while (1) {
         choice = run_main_menu();
-        
+
         switch (choice) {
         case CHOICE_MM_EXIT:
             exit_game(0);
@@ -32,11 +32,13 @@ int main(void) {
             // the main gameplay loop
             while (is_playing) {
                 clear_screen();
-                print_2_boards(&player_board, &computer_board, "Your side", "Opponent's side");
+                print_2_boards(&player_board, &computer_board, "Your side",
+                               "Opponent's side");
                 printf("\n");
 
                 printf("%s", extra_message);
-                printf("Your turn (coords, \"exit\") %d: ", player_board.targets_left);
+                printf("Your turn (coords, \"exit\") %d: ",
+                       player_board.targets_left);
 
                 choice = get_turn_input(&y, &x);
                 switch (choice) {
@@ -52,7 +54,8 @@ int main(void) {
                         extra_message = "You hit the ship.\n";
                         break;
                     case SHOT_ALREADY:
-                        extra_message = "You already fired at this tile before. Try again.\n";
+                        extra_message = "You already fired at this tile "
+                                        "before. Try again.\n";
                         break;
                     case SHOT_INVALID:
                         extra_message = "Invalid coordinates to fire at.\n";
@@ -65,8 +68,10 @@ int main(void) {
                         break;
                     case SHOT_WIN:
                         clear_screen();
-                        print_2_boards(&player_board, &computer_board, "Your side (Winner)", "Opponent's side");
-                        printf("\nCongratulations! You win!\nPress enter to go back to main menu\n");
+                        print_2_boards(&player_board, &computer_board,
+                                       "Your side (Winner)", "Opponent's side");
+                        printf("\nCongratulations! You win!\n");
+                        printf("Press enter to go back to main menu\n");
                         getchar();
                         flush_stdin();
                         is_playing = 0;
