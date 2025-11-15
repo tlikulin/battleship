@@ -3,12 +3,11 @@
 #include <ctype.h>
 #include <sys/types.h>
 #include <string.h>
-
 #include <stdio.h>
 
 #include "utility.h"
 
-// LOCAL:
+// EXPOSED in utility.h:
 
 // reads all extra characters left in stdin until end of line or EOF
 void flush_stdin(void) {
@@ -17,8 +16,6 @@ void flush_stdin(void) {
         c = getchar();
     while (c != EOF && c != '\n');
 }
-
-// EXPOSED in utility.h:
 
 // TODO: replace scanf
 int get_int(void) {
@@ -29,22 +26,24 @@ int get_int(void) {
     return choice;
 }
 
-// uses getline (internally uses malloc) to read a whole line and then parses
+// uses getline (internally uses malloc) to read a whole line and then parses (must free in the end)
+// exit: containg "exit" or "quit" in the beginning of input (case sensitive)
+// coords: "a4", "g7", etc. (case insensitive)
 enum turn_type get_turn_input(int* y_ptr, int* x_ptr) {
     char* line = NULL;
     size_t length = 0;
     ssize_t bytes_read = 0;
 
     if (feof(stdin))  {
-        clearerr(stdin); // to fix a problem when entering C-D
+        clearerr(stdin); // to fix a problem with entering C-D
     }
     bytes_read = getline(&line, &length, stdin);
 
-    if (bytes_read >= 4 && (strncmp(line, "exit", 4) == 0 || strncmp(line, "quit", 4) == 0)) { // check for attemp to exit
+    if (bytes_read >= 4 && (strncmp(line, "exit", 4) == 0 || strncmp(line, "quit", 4) == 0)) { // check for attempt to exit
         free(line);
         return TURN_EXIT;
     }
-    else if ((bytes_read == 3 && line[2] == '\n') || (bytes_read == 2 && line[2] == '\0')) { // right amount of chars for coords
+    else if ((bytes_read >= 3 && isspace(line[2])) || bytes_read == 2) { // right amount of chars for coords
         char first = line[0], second = line[1];
         free(line);
 
@@ -57,7 +56,7 @@ enum turn_type get_turn_input(int* y_ptr, int* x_ptr) {
             return TURN_INVALID;
         }
     } 
-    else { // wrong amount of chars or error to read
+    else { // error to read or invalid
         free(line);
         return TURN_INVALID;
     }

@@ -33,8 +33,10 @@ int run_main_menu(void) {
         clear_screen();
         printf("%s%s", BATTLESHIP_LOGO, MAIN_MENU_CHOICES);
 
-        if (choice == CHOICE_MM_LOAD)
+        if (choice == CHOICE_MM_LOAD) {
             printf("Not yet implemented!\n");
+        }
+        
         printf("You made an invalid choice, try again.\n");
 
         choice = get_int();

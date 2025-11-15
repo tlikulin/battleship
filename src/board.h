@@ -22,6 +22,7 @@ enum tile_type {
 // a board storing a grid (2d array) of tiles
 typedef struct board {
     unsigned char grid[GRID_SIZE][GRID_SIZE];
+    int targets_left;
 } board_t;
 
 // represents the outcome of a shot; returned by take_shot()
@@ -31,6 +32,7 @@ enum shot_result {
     SHOT_MISSED,
     SHOT_HIT,
     SHOT_SHIP_DOWN,
+    SHOT_WIN
 };
 
 // initializes a board (clears and then populates with ships)

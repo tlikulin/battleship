@@ -36,7 +36,7 @@ int main(void) {
                 printf("\n");
 
                 printf("%s", extra_message);
-                printf("Your turn (coords, \"exit\"): ");
+                printf("Your turn (coords, \"exit\") %d: ", player_board.targets_left);
 
                 choice = get_turn_input(&y, &x);
                 switch (choice) {
@@ -63,6 +63,14 @@ int main(void) {
                     case SHOT_MISSED:
                         extra_message = "You hit the water (a miss). \n";
                         break;
+                    case SHOT_WIN:
+                        clear_screen();
+                        print_2_boards(&player_board, &computer_board, "Your side (Winner)", "Opponent's side");
+                        printf("\nCongratulations! You win!\nPress enter to go back to main menu\n");
+                        getchar();
+                        flush_stdin();
+                        is_playing = 0;
+                        break;
                     default:
                         exit_game(1);
                         break;
@@ -73,7 +81,6 @@ int main(void) {
                     break;
                 }
             }
-
             break;
         // unexpected, run_main_menu() supposed to allways return one of above
         default:

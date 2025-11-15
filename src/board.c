@@ -125,13 +125,20 @@ void populate_board(board_t* board) {
 
     for (int i = 0; i < SHIPS_TOTAL; ++i) {
         ship_size = SHIPS_SIZES[i];
+
         do { // generate random coords and orientation until fits
-            is_horizontal = rand() % 2;
-            y = rand() % (GRID_SIZE - ship_size + 1);
-            x = rand() % (GRID_SIZE - ship_size + 1);
+            if ((is_horizontal = rand() % 2)) {
+                y = rand() % GRID_SIZE;
+                x = rand() % (GRID_SIZE - ship_size + 1);
+            }
+            else {
+                y = rand() % (GRID_SIZE - ship_size + 1);
+                x = rand() % GRID_SIZE;
+            }
         } while (!can_place_ship(board, ship_size, is_horizontal, y, x));
 
         place_ship(board, ship_size, is_horizontal, y, x);
+        board->targets_left += ship_size;
     }
 }
 
@@ -254,9 +261,13 @@ void print_board_row(board_t* board, int y) {
 const int SHIPS_SIZES[SHIPS_TOTAL] = {5, 4, 3, 2, 2};
 
 void init_board(board_t* board) {
-    for (int y = 0; y < GRID_SIZE; ++y)
-        for (int x = 0; x < GRID_SIZE; ++x)
+    for (int y = 0; y < GRID_SIZE; ++y) {
+        for (int x = 0; x < GRID_SIZE; ++x) {
             board->grid[y][x] = TILE_WATER;
+        }
+    }
+
+    board->targets_left = 0;
 
     populate_board(board);
 }
@@ -275,6 +286,7 @@ void print_board(board_t* board) {
 // implementation doesn't just use print_board() twice
 // because they would be printed one below the other instead
 // which was not desired
+// NOTE: clear_screen() should be called first because this function move the cursor to a fixed place
 void print_2_boards(board_t* board1, board_t* board2, const char* title1, const char* title2) {
     // print titles above the boards (if any)
     if (title1) {
@@ -319,9 +331,15 @@ enum shot_result take_shot(board_t* board, int y, int x) {
         return SHOT_MISSED;
     case TILE_SHIP:
         board->grid[y][x] = TILE_SHIP_HIT;
+        board->targets_left -= 1;
         if (is_ship_down(board, y, x)) {
             discover_around_sunk_ship(board, y, x);
-            return SHOT_SHIP_DOWN;
+            if (board->targets_left == 0) { // checked inside the is_ship_down if so that discover_around_sunk_ship will be called before returning
+                return SHOT_WIN;
+            }
+            else {
+                return SHOT_SHIP_DOWN;
+            }
         } 
         else {
             return SHOT_HIT;

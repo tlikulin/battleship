@@ -6,13 +6,15 @@
 * - exiting the application
 */
 
-// represents possible user input inside the gameplay loop
+// represents possible user input types inside the gameplay loop
 enum turn_type {
     TURN_INVALID = 0,
     TURN_COORDS,
     TURN_EXIT
 };
 
+// Reads all remaining characters from stdin, so that future reads from it don't get leftover characters
+void flush_stdin(void);
 // Enter an int from keyboard
 int get_int(void);
 // reads user input and parses accordingly,
