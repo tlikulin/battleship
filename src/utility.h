@@ -16,7 +16,7 @@ enum turn_type {
 // Reads all remaining characters from stdin, so that future reads from it don't get leftover characters
 void flush_stdin(void);
 // Enter an int from keyboard
-int get_int(void);
+int get_choice(void);
 // reads user input and parses accordingly,
 // it could be coordinates, exit or invalid
 // returns a value from enum turn_type

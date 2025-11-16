@@ -4,6 +4,8 @@
 * Declares types and functions related to the player's board.
 */
 
+// if defined, ships will be visible at all times
+// #define MY_DEBUG
 // should work in the range [?, 9]
 #define GRID_SIZE 8
 // Ships: 5 4 3 2 2
@@ -44,3 +46,4 @@ void print_2_boards(board_t* board1, board_t* board2, const char* title1, const 
 // shoot at the board at given coords
 // returns the outcome (descibed at the enum)
 enum shot_result take_shot(board_t* board, int y, int x);
+enum shot_result computer_take_shot(board_t* board);

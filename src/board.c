@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
 
 #include "board.h"
 
@@ -63,7 +62,11 @@ char tile_to_char(enum tile_type tile) {
     case TILE_WATER_HIT:
         return 'O';
     case TILE_SHIP:
+#ifdef MY_DEBUG
         return 's';
+#else
+        return ' ';
+#endif
     case TILE_SHIP_HIT:
         return 'X';
     case TILE_NONE:
@@ -121,12 +124,6 @@ void place_ship(board_t* board, int ship_size, int is_horizontal, int y,
 void populate_board(board_t* board) {
     int ship_size, is_horizontal;
     int y, x;
-    // seed the rng the first time the function is called
-    static int was_seeded = 0;
-    if (!was_seeded) {
-        srand(time(NULL));
-        was_seeded = 1;
-    }
 
     for (int i = 0; i < SHIPS_TOTAL; ++i) {
         ship_size = SHIPS_SIZES[i];
@@ -291,8 +288,6 @@ void print_board(board_t* board) {
 // implementation doesn't just use print_board() twice
 // because they would be printed one below the other instead
 // which was not desired
-// NOTE: clear_screen() should be called first because this function move the
-// cursor to a fixed place
 void print_2_boards(board_t* board1, board_t* board2, const char* title1,
                     const char* title2) {
     // print titles above the boards (if any)
@@ -301,7 +296,7 @@ void print_2_boards(board_t* board1, board_t* board2, const char* title1,
     }
     if (title2) {
         // uses ANSI escape code to move cursor to right position
-        printf("\x1B[1;%dH", 2 * GRID_SIZE + 18);
+        printf("\x1B[%dG", 2 * GRID_SIZE + 18);
         printf("%s", title2);
     }
     printf("\n");
@@ -357,4 +352,15 @@ enum shot_result take_shot(board_t* board, int y, int x) {
     default:
         return SHOT_INVALID; // invalid tile type
     }
+}
+
+enum shot_result computer_take_shot(board_t* board) {
+    int x, y;
+    // keep generating random coords until can shoot
+    do {
+        x = rand() % GRID_SIZE;
+        y = rand() % GRID_SIZE;
+    } while (board->grid[y][x] != TILE_SHIP && board->grid[y][x] != TILE_WATER);
+
+    return take_shot(board, y, x);
 }

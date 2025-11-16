@@ -26,7 +26,7 @@ int run_main_menu(void) {
 
     clear_screen();
     printf("%s%s", BATTLESHIP_LOGO, MAIN_MENU_CHOICES);
-    choice = get_int();
+    choice = get_choice();
 
     while (choice != CHOICE_MM_NEW_GAME && choice != CHOICE_MM_EXIT) {
         clear_screen();
@@ -38,7 +38,7 @@ int run_main_menu(void) {
 
         printf("You made an invalid choice, try again.\n");
 
-        choice = get_int();
+        choice = get_choice();
     }
 
     return choice;

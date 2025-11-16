@@ -11,19 +11,44 @@
 
 // reads all extra characters left in stdin until end of line or EOF
 void flush_stdin(void) {
+    if (feof(stdin)) {
+        clearerr(stdin);
+        return;
+    }
+
     int c; // declared int so that it can catch EOF (-1)
     do
         c = getchar();
     while (c != EOF && c != '\n');
 }
 
-// TODO: replace scanf
-int get_int(void) {
-    int choice;
+// returns 0 if input was invalid
+int get_choice(void) {
+    int choice = 0;
+    char* line = NULL;
+    size_t length = 0;
+
+    // to fix a problem with entering C-D
+    if (feof(stdin)) {
+        clearerr(stdin);
+    }
+
     printf("Your choice: ");
-    scanf(" %d", &choice);
-    flush_stdin();
-    return choice;
+
+    if (getline(&line, &length, stdin) == -1) {
+        if (feof(stdin)) {
+            clearerr(stdin);
+        }
+        free(line);
+        return 0;
+        // -1 (==EOF) - couldn't read at all, 0 - didn't find a %d
+    } else if (sscanf(line, " %d", &choice) < 1) {
+        free(line);
+        return 0;
+    } else {
+        free(line);
+        return choice;
+    }
 }
 
 // uses getline (internally uses malloc) to read a whole line and then parses
@@ -34,10 +59,13 @@ enum turn_type get_turn_input(int* y_ptr, int* x_ptr) {
     size_t length = 0;
     ssize_t bytes_read = 0;
 
+    // to fix a problem with entering C-D
     if (feof(stdin)) {
-        clearerr(stdin); // to fix a problem with entering C-D
+        clearerr(stdin);
     }
+
     bytes_read = getline(&line, &length, stdin);
+
     // check for attempt to exit
     if (bytes_read >= 4 &&
         (strncmp(line, "exit", 4) == 0 || strncmp(line, "quit", 4) == 0)) {
