@@ -20,7 +20,7 @@ const int DIRECTIONS[DIRECTIONS_TOTAL] = {DIRECTION_UP, DIRECTION_DOWN,
 const char* BOARDS_BORDERLINE = "      #      ";
 
 // get the character representation of a given tile type
-char tile_to_char(enum tile_type tile);
+char tile_to_char(enum tile_type tile, int is_own);
 // Checks if the given coords are within the board
 int is_inbounds(int y, int x);
 // fills the board with the ships randomly
@@ -53,9 +53,10 @@ void move_in_direction(int* y_ptr, int* x_ptr, enum direction direction);
 void print_column_numbers(void);
 // prints a row of the board with given index, includes letter at the beggining
 // e.g. "C  | | | |s|O| | "
-void print_board_row(board_t* board, int y);
+void print_board_row(board_t* board, int y, int is_own);
 
-char tile_to_char(enum tile_type tile) {
+// is_own = should undiscovered ships be displayed
+char tile_to_char(enum tile_type tile, int is_own) {
     switch (tile) {
     case TILE_WATER:
         return ' ';
@@ -65,7 +66,11 @@ char tile_to_char(enum tile_type tile) {
 #ifdef MY_DEBUG
         return 's';
 #else
-        return ' ';
+        if (is_own) {
+            return 's';
+        } else {
+            return ' ';
+        }
 #endif
     case TILE_SHIP_HIT:
         return 'X';
@@ -248,14 +253,15 @@ void print_column_numbers(void) {
     printf("%d", GRID_SIZE); // no trailing space
 }
 
-void print_board_row(board_t* board, int y) {
+// is_own = should undiscovered ships be displayed
+void print_board_row(board_t* board, int y, int is_own) {
     printf("%c ", 'A' + y); // 'A' + 0 is 'A', 'A' + 1 is 'B', etc.
     // '|'-separated tiles
     for (int x = 0; x < GRID_SIZE - 1; ++x) {
-        printf("%c|", tile_to_char(board->grid[y][x]));
+        printf("%c|", tile_to_char(board->grid[y][x], is_own));
     }
     // last column, has no separator after
-    printf("%c", tile_to_char(board->grid[y][GRID_SIZE - 1]));
+    printf("%c", tile_to_char(board->grid[y][GRID_SIZE - 1], is_own));
 }
 
 // EXPOSED in board.h:
@@ -274,22 +280,25 @@ void init_board(board_t* board) {
     populate_board(board);
 }
 
-void print_board(board_t* board) {
+// is_own = should undiscovered ships be displayed
+void print_board(board_t* board, int is_own) {
     // print column numbers
     print_column_numbers();
     printf("\n");
     // + print the grid with row letters
     for (int y = 0; y < GRID_SIZE; ++y) {
-        print_board_row(board, y);
+        print_board_row(board, y, is_own);
         printf("\n");
     }
 }
 
-// implementation doesn't just use print_board() twice
-// because they would be printed one below the other instead
-// which was not desired
+// Implementation doesn't just use print_board() twice
+// because they would be printed one below the other instead,
+// which was not desired.
+// visibility: if 0th bit (& 1) is set, ships in board1 are visible,
+// and if 1st bit (& 2) is set, ships in board2 are visible
 void print_2_boards(board_t* board1, board_t* board2, const char* title1,
-                    const char* title2) {
+                    const char* title2, int visibility) {
     // print titles above the boards (if any)
     if (title1) {
         printf("   %s", title1);
@@ -315,9 +324,9 @@ void print_2_boards(board_t* board1, board_t* board2, const char* title1,
 
     // print the grids with separators
     for (int y = 0; y < GRID_SIZE; ++y) {
-        print_board_row(board1, y);
+        print_board_row(board1, y, visibility & 1);
         printf("%s", BOARDS_BORDERLINE);
-        print_board_row(board2, y);
+        print_board_row(board2, y, visibility & 2);
         printf("\n");
     }
 }

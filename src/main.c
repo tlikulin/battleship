@@ -37,11 +37,11 @@ int main(void) {
             while (is_playing) {
                 clear_screen();
                 print_2_boards(&player_board, &computer_board, "Your side",
-                               "Opponent's side");
+                               "Opponent's side", 1);
                 printf("\n");
                 printf("%s", extra_message);
                 if (whose_turn == 2) {
-                    printf("Press enter to continue\n");
+                    printf("Press enter to continue");
                     flush_stdin();
                     whose_turn = 0;
                 } else if (whose_turn == 1) {
@@ -55,7 +55,7 @@ int main(void) {
                         is_playing = 0;
                         continue;
                     case TURN_COORDS:
-                        switch (take_shot(&player_board, y, x)) {
+                        switch (take_shot(&computer_board, y, x)) {
                         case SHOT_HIT:
                             extra_message =
                                 "You hit the ship. Take an extra turn.\n";
@@ -80,9 +80,9 @@ int main(void) {
                             clear_screen();
                             print_2_boards(&player_board, &computer_board,
                                            "Your side (Winner)",
-                                           "Opponent's side");
+                                           "Opponent's side", 1);
                             printf("\nCongratulations! You win!\n");
-                            printf("Press enter to go back to main menu\n");
+                            printf("Press enter to go back to main menu");
                             flush_stdin();
                             is_playing = 0;
                             continue;
@@ -98,7 +98,7 @@ int main(void) {
                 } else {
                     // computer's turn
                     // only reachable if player shot validly but hit water
-                    switch (computer_take_shot(&computer_board)) {
+                    switch (computer_take_shot(&player_board)) {
                     case SHOT_HIT:
                         extra_message =
                             "Opponent hit the ship and takes an extra turn.\n";
@@ -116,13 +116,14 @@ int main(void) {
                     case SHOT_WIN:
                         clear_screen();
                         print_2_boards(&player_board, &computer_board,
-                                       "Your side", "Opponent's side (Winner)");
+                                       "Your side", "Opponent's side (Winner)",
+                                       1);
                         printf("\nOppenent wins! Better luck next time.\n");
-                        printf("Press enter to go back to main menu\n");
+                        printf("Press enter to go back to main menu");
                         flush_stdin();
                         is_playing = 0;
                         continue;
-                    // unexpected, computer_take_shot() supposed to allways
+                    // unexpected, computer_take_shot() is supposed to allways
                     // return one of above
                     default:
                         exit_game(1);
