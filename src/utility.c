@@ -54,7 +54,7 @@ int get_choice(void) {
 // uses getline (internally uses malloc) to read a whole line and then parses
 // (must free in the end) exit: containg "exit" or "quit" in the beginning of
 // input (case sensitive) coords: "a4", "g7", etc. (case insensitive)
-enum turn_type get_turn_input(int* y_ptr, int* x_ptr) {
+enum input_type get_turn_input(int* y_ptr, int* x_ptr) {
     char* line = NULL;
     size_t length = 0;
     ssize_t bytes_read = 0;
@@ -70,7 +70,7 @@ enum turn_type get_turn_input(int* y_ptr, int* x_ptr) {
     if (bytes_read >= 4 &&
         (strncmp(line, "exit", 4) == 0 || strncmp(line, "quit", 4) == 0)) {
         free(line);
-        return TURN_EXIT;
+        return INPUT_EXIT;
         // right amount of chars for coords
     } else if ((bytes_read >= 3 && isspace(line[2])) || bytes_read == 2) {
         char first = line[0], second = line[1];
@@ -80,13 +80,13 @@ enum turn_type get_turn_input(int* y_ptr, int* x_ptr) {
         if (isalpha(first) && isdigit(second)) {
             *y_ptr = toupper(first) - 'A';
             *x_ptr = second - '1';
-            return TURN_COORDS;
+            return INPUT_COORDS;
         } else { // wrong types of 2 chars
-            return TURN_INVALID;
+            return INPUT_INVALID;
         }
     } else { // error to read or invalid
         free(line);
-        return TURN_INVALID;
+        return INPUT_INVALID;
     }
 }
 

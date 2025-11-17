@@ -266,7 +266,7 @@ void print_board_row(board_t* board, int y, int is_own) {
 
 // EXPOSED in board.h:
 
-const int SHIPS_SIZES[SHIPS_TOTAL] = {5, 4, 3, 2, 2};
+const int SHIPS_SIZES[SHIPS_TOTAL] = {4, 3, 3, 2, 2};
 
 void init_board(board_t* board) {
     for (int y = 0; y < GRID_SIZE; ++y) {
@@ -276,6 +276,8 @@ void init_board(board_t* board) {
     }
 
     board->targets_left = 0;
+    board->hits = 0;
+    board->shots = 0;
 
     populate_board(board);
 }
@@ -309,13 +311,12 @@ void print_2_boards(board_t* board1, board_t* board2, const char* title1,
         printf("%s", title2);
     }
     printf("\n");
-    // print 1 line separating titles from boards
-    // includes the board-separating element
-    for (int i = 0; i < GRID_SIZE * 2 + 1; ++i) {
-        printf(" ");
-    }
-    printf("%s\n", BOARDS_BORDERLINE);
-
+    // print stats - number of shots and hits
+    printf("   %d/%d", board1->hits, board1->shots);
+    // uses ANSI escape code to move cursor to right position
+    printf("\x1B[%dG", 2 * GRID_SIZE + 18);
+    printf("%d/%d", board2->hits, board2->shots);
+    printf("\n\n");
     // print column numbers
     print_column_numbers();
     printf("%s", BOARDS_BORDERLINE);
@@ -342,10 +343,13 @@ enum shot_result take_shot(board_t* board, int y, int x) {
         return SHOT_ALREADY; // already fired at
     case TILE_WATER:
         board->grid[y][x] = TILE_WATER_HIT;
+        board->shots += 1;
         return SHOT_MISSED;
     case TILE_SHIP:
         board->grid[y][x] = TILE_SHIP_HIT;
         board->targets_left -= 1;
+        board->hits += 1;
+        board->shots += 1;
         if (is_ship_down(board, y, x)) {
             discover_around_sunk_ship(board, y, x);
             // checked inside the is_ship_down if so that
