@@ -63,15 +63,11 @@ char tile_to_char(enum tile_type tile, int is_own) {
     case TILE_WATER_HIT:
         return 'O';
     case TILE_SHIP:
-#ifdef MY_DEBUG
-        return 's';
-#else
         if (is_own) {
             return 's';
         } else {
             return ' ';
         }
-#endif
     case TILE_SHIP_HIT:
         return 'X';
     case TILE_NONE:

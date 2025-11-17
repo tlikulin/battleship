@@ -13,10 +13,11 @@ enum input_type {
     INPUT_EXIT
 };
 
-// Reads all remaining characters from stdin, so that future reads from it don't
-// get leftover characters
-void flush_stdin(void);
-// Enter an int from keyboard
+// Displays a message and waits for enter before continuing
+void wait_enter(void);
+// Enter an int from keyboard.
+// Note: return 0 if input was invalid.
+// This is taken into account as enums have 0 as invalid variant.
 int get_choice(void);
 // reads user input and parses accordingly,
 // it could be coordinates, exit or invalid

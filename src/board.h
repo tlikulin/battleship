@@ -4,8 +4,6 @@
  * Declares types and functions related to the player's board.
  */
 
-// if defined, ships will be visible at all times
-// #define MY_DEBUG
 // should work in the range [?, 9]
 #define GRID_SIZE 8
 // Ships: 5 4 3 2 2

@@ -7,9 +7,11 @@
 
 #include "utility.h"
 
-// EXPOSED in utility.h:
+// LOCAL:
 
-// reads all extra characters left in stdin until end of line or EOF
+// Reads all extra characters left in stdin until end of line or EOF.
+// Currently only used for wait_enter(), other input functions
+// use getline(), so they already read to end of line.
 void flush_stdin(void) {
     if (feof(stdin)) {
         clearerr(stdin);
@@ -20,6 +22,13 @@ void flush_stdin(void) {
     do
         c = getchar();
     while (c != EOF && c != '\n');
+}
+
+// EXPOSED in utility.h:
+
+void wait_enter(void) {
+    printf("Press enter to continue");
+    flush_stdin(); // wait for enter and discard all
 }
 
 // returns 0 if input was invalid
