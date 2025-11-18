@@ -278,21 +278,6 @@ void init_board(board_t* board) {
     populate_board(board);
 }
 
-// is_own = should undiscovered ships be displayed
-void print_board(board_t* board, int is_own) {
-    // print column numbers
-    print_column_numbers();
-    printf("\n");
-    // + print the grid with row letters
-    for (int y = 0; y < GRID_SIZE; ++y) {
-        print_board_row(board, y, is_own);
-        printf("\n");
-    }
-}
-
-// Implementation doesn't just use print_board() twice
-// because they would be printed one below the other instead,
-// which was not desired.
 // visibility: if 0th bit (& 1) is set, ships in board1 are visible,
 // and if 1st bit (& 2) is set, ships in board2 are visible
 void print_2_boards(board_t* board1, board_t* board2, const char* title1,
