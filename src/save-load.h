@@ -16,4 +16,4 @@
 //  tile_type values
 // Each save takes 1 line in the file.
 
-int save_game(board_t* board1, board_t* board2, int id, const char* name);
+int save_game(board_t* board1, board_t* board2, const char* name);

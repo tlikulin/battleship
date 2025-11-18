@@ -308,10 +308,10 @@ void print_2_boards(board_t* board1, board_t* board2, const char* title1,
     }
     printf("\n");
     // print stats - number of shots and hits
-    printf("   %d/%d", board1->hits, board1->shots);
+    printf("   Progress: %d/%d", board1->hits, board1->shots);
     // uses ANSI escape code to move cursor to right position
     printf("\x1B[%dG", 2 * GRID_SIZE + 18);
-    printf("%d/%d", board2->hits, board2->shots);
+    printf("Progress: %d/%d", board2->hits, board2->shots);
     printf("\n\n");
     // print column numbers
     print_column_numbers();

@@ -1,18 +1,22 @@
 #include "save-load.h"
 #include "board.h"
 #include <stdio.h>
+#include <stdlib.h>
 
 const char* SAVEFILE_NAME = "battleship-savefile.txt";
 
 // EXPOSED in saves.h:
 
-int save_game(board_t* board1, board_t* board2, int id, const char* name) {
+int save_game(board_t* board1, board_t* board2, const char* name) {
     char line[512] = {0};
-    int pos = 0;
+    int pos = RAND_MAX, id;
     FILE* savefile = fopen(SAVEFILE_NAME, "a");
     if (savefile == NULL) {
         return 0;
     }
+    do
+        id = rand();
+    while (id < 1);
 
     pos = sprintf(line, "%d,%s,%d,%d,%d,%d,%d,%d,", id, name,
                   board1->targets_left, board1->hits, board1->shots,

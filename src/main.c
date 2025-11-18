@@ -3,14 +3,12 @@
 #include <time.h>
 #include <unistd.h>
 
-#include "board.h"
 #include "menus.h"
-#include "save-load.h"
+// #include "save-load.h"
 #include "utility.h"
 
 int main(void) {
     int is_in_load_menu = 0;
-    board_t player_board, computer_board;
 
     // Forbid using the game non-interactively.
     if (!isatty(0)) {
@@ -37,14 +35,7 @@ int main(void) {
                 switch (run_load_menu()) {
                 // TODO: Do actual loading
                 case CHOICE_LM_LIST_ALL:
-                    init_board(&player_board);
-                    init_board(&computer_board);
-                    if (!save_game(&player_board, &computer_board, 5, "test")) {
-                        printf("Could not save\n");
-                    } else {
-                        printf("Save successful\n");
-                    }
-                    // printf("Listing all\n");
+                    printf("Listing all\n");
                     wait_enter();
                     continue;
                 case CHOICE_LM_LIST_PLAYER:

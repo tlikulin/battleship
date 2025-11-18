@@ -2,7 +2,7 @@
 
 /*
  * Contains utility functions such as
- * - reading an int/coords (with validation),
+ * - reading a menu choice/coords (with validation),
  * - exiting the application
  */
 
@@ -10,6 +10,7 @@
 enum input_type {
     INPUT_INVALID = 0,
     INPUT_COORDS,
+    INPUT_SAVE,
     INPUT_EXIT
 };
 

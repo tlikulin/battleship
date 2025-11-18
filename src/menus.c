@@ -2,6 +2,7 @@
 
 #include "board.h"
 #include "menus.h"
+#include "save-load.h"
 #include "utility.h"
 
 // LOCAL:
@@ -111,7 +112,7 @@ void run_new_game(void) {
         // Player's turn where coordinates, "exit"/"quit" or "save" could be
         // inputed. All these cases are handled here.
         case TURN_PLAYER:
-            printf("Your turn (coords, \"exit\"): ");
+            printf("Your turn (coords, , \"save\", \"exit\"): ");
 
             switch (get_turn_input(&y, &x)) {
             case INPUT_INVALID:
@@ -119,6 +120,14 @@ void run_new_game(void) {
                 continue;
             case INPUT_EXIT:
                 return;
+            case INPUT_SAVE:
+                if (save_game(&player_board, &computer_board,
+                              "save_from_game")) {
+                    extra_message = "The game has been saved.\n";
+                } else {
+                    extra_message = "The game could not be saved.\n";
+                }
+                continue;
             case INPUT_COORDS:
                 switch (take_shot(&computer_board, y, x)) {
                 case SHOT_HIT:
@@ -142,7 +151,8 @@ void run_new_game(void) {
                 case SHOT_WIN:
                     clear_screen();
                     print_2_boards(&player_board, &computer_board,
-                                   "Your side (Winner)", "Opponent's side", 1);
+                                   "Your side (Survived)",
+                                   "Opponent's side (Destroyed)", 1);
                     printf("\nCongratulations! You win!\n");
                     wait_enter();
                     return;
@@ -177,8 +187,9 @@ void run_new_game(void) {
                 continue;
             case SHOT_WIN:
                 clear_screen();
-                print_2_boards(&player_board, &computer_board, "Your side",
-                               "Opponent's side (Winner)", 1);
+                print_2_boards(&player_board, &computer_board,
+                               "Your side (Destroyed)",
+                               "Opponent's side (Survived)", 1);
                 printf("\nOppenent wins! Better luck next time.\n");
                 wait_enter();
                 return;

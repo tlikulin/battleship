@@ -80,6 +80,10 @@ enum input_type get_turn_input(int* y_ptr, int* x_ptr) {
         (strncmp(line, "exit", 4) == 0 || strncmp(line, "quit", 4) == 0)) {
         free(line);
         return INPUT_EXIT;
+        // check for attempt to save game
+    } else if (bytes_read >= 4 && strncmp(line, "save", 4) == 0) {
+        free(line);
+        return INPUT_SAVE;
         // right amount of chars for coords
     } else if ((bytes_read >= 3 && isspace(line[2])) || bytes_read == 2) {
         char first = line[0], second = line[1];
