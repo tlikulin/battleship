@@ -35,12 +35,10 @@ int main(void) {
                 switch (run_load_menu()) {
                 // TODO: Do actual loading
                 case CHOICE_LM_LIST_ALL:
-                    printf("Listing all\n");
-                    wait_enter();
+                    print_all_saves();
                     continue;
                 case CHOICE_LM_LIST_PLAYER:
-                    printf("Listing player\n");
-                    wait_enter();
+                    print_player_saves();
                     continue;
                 case CHOICE_LM_LOAD_GAME:
                     play_saved_game();

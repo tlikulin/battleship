@@ -223,8 +223,8 @@ void play_saved_game(void) {
     if (id == 0) {
         printf("Invalid ID: must be a positive integer\n");
         wait_enter();
-    } else if (load_boards(id, &player_board, &computer_board, unused1,
-                           unused2) == 0) {
+    } else if (load_game(id, &player_board, &computer_board, unused1,
+                         unused2) == 0) {
         printf("\nGame with this ID has not been found.\n");
         wait_enter();
     } else {
@@ -242,8 +242,8 @@ void print_saved_board(void) {
 
     if (id == 0) {
         printf("Invalid ID: must be a positive integer\n");
-    } else if (load_boards(id, &player_board, &computer_board, player_title,
-                           computer_title) == 0) {
+    } else if (load_game(id, &player_board, &computer_board, player_title,
+                         computer_title) == 0) {
         printf("\nGame with this ID has not been found.\n");
     } else {
         clear_screen();
@@ -253,5 +253,70 @@ void print_saved_board(void) {
                        computer_title, 1);
         printf("\n");
     }
+    wait_enter();
+}
+
+void print_all_saves(void) {
+    board_t board1, board2;
+    char name1[NAME_LEN + 1], name2[NAME_LEN + 1];
+    int id, status;
+    FILE* savefile = fopen(SAVEFILE_NAME, "r");
+    if (savefile == NULL) {
+        printf("Error: cannot find the savefile `%s`", SAVEFILE_NAME);
+        wait_enter();
+        return;
+    }
+
+    clear_screen();
+    printf("Listing all games saved in the file:\n\n");
+
+    while ((status = read_next_save(savefile, &id, name1, name2, &board1,
+                                    &board2)) != -1) {
+        if (status == 1) {
+            printf("ID=%d: %s (made %d hits/%d shots) vs. %s (made %d hits/%d "
+                   "shots)\n",
+                   id, name1, board2.hits, board2.shots, name2, board1.hits,
+                   board1.shots);
+        }
+    }
+
+    fclose(savefile);
+    printf("\n");
+    wait_enter();
+}
+
+void print_player_saves(void) {
+    board_t board1, board2;
+    char name1[NAME_LEN + 1], name2[NAME_LEN + 1];
+    char search_name[NAME_LEN + 1];
+    int id, status;
+    FILE* savefile = fopen(SAVEFILE_NAME, "r");
+    if (savefile == NULL) {
+        printf("Error: cannot find the savefile `%s`", SAVEFILE_NAME);
+        wait_enter();
+        return;
+    }
+
+    printf("\nEnter the name to search for: ");
+    if (!get_name(search_name)) {
+        exit_game(1);
+    }
+
+    clear_screen();
+    printf("Listing all games with player %s:\n\n", search_name);
+
+    while ((status = read_next_save(savefile, &id, name1, name2, &board1,
+                                    &board2)) != -1) {
+        if (status == 1 && (strcmp(search_name, name1) == 0 ||
+                            strcmp(search_name, name2) == 0)) {
+            printf("ID=%d: %s (made %d hits/%d shots) vs. %s (made %d hits/%d "
+                   "shots)\n",
+                   id, name1, board2.hits, board2.shots, name2, board1.hits,
+                   board1.shots);
+        }
+    }
+
+    fclose(savefile);
+    printf("\n");
     wait_enter();
 }

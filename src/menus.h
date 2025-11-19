@@ -43,3 +43,7 @@ void play_new_game(void);
 void play_saved_game(void);
 //
 void print_saved_board(void);
+//
+void print_all_saves(void);
+//
+void print_player_saves(void);

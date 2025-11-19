@@ -1,5 +1,6 @@
 #pragma once
 #include "board.h"
+#include <stdio.h>
 
 /*
  * Contains functions for creating saves
@@ -22,11 +23,18 @@
 // the maximum number of characters allowed in the name field of a save
 #define NAME_LEN 20
 
+extern const char* SAVEFILE_NAME;
+
+// Reads a line from the file and tries to parse it as the saved state of a
+// game.
+// Returns 1 if successful, 0 if could not parse, -1 if could not read.
+int read_next_save(FILE* file, int* id, char* name1, char* name2,
+                   board_t* board1, board_t* board2);
 // Writes a line representing a game state to the savefile.
 // Returns 1 if successful, 0 if failed.
 int save_game(board_t* board1, board_t* board2, const char* name1,
               const char* name2);
 // Loads the saved state of boards from the record with given ID.
 // Returns 1 if successful, 0 if failed.
-int load_boards(int id, board_t* board1, board_t* board2, char* name1,
-                char* name2);
+int load_game(int id, board_t* board1, board_t* board2, char* name1,
+              char* name2);

@@ -6,15 +6,7 @@
 #include "board.h"
 #include "save-load.h"
 
-// LOCAL:
-
-const char* SAVEFILE_NAME = "battleship-savefile.txt";
-
-// Reads a line from the file and tries to parse it as the saved state of a
-// game.
-// Returns 1 if successful, 0 if could not parse, -1 if could not read.
-int read_next_save(FILE* file, int* id, char* name1, char* name2,
-                   board_t* board1, board_t* board2);
+// EXPOSED in saves.h:
 
 // Reads a line from the file using getline() - must free.
 // Names (first 2 fields) are read byte by byte until a comma is found or name
@@ -94,7 +86,7 @@ int read_next_save(FILE* file, int* id, char* name1, char* name2,
     return 1;
 }
 
-// EXPOSED in saves.h:
+const char* SAVEFILE_NAME = "battleship-savefile.txt";
 
 int save_game(board_t* board1, board_t* board2, const char* name1,
               const char* name2) {
@@ -135,8 +127,8 @@ int save_game(board_t* board1, board_t* board2, const char* name1,
     }
 }
 
-int load_boards(int id, board_t* board1, board_t* board2, char* name1,
-                char* name2) {
+int load_game(int id, board_t* board1, board_t* board2, char* name1,
+              char* name2) {
     board_t temp_board1, temp_board2;
     int status, temp_id;
     char name1_temp[NAME_LEN + 1], name2_temp[NAME_LEN + 1];

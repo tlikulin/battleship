@@ -3,7 +3,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/types.h>
 
 #include "utility.h"
 
@@ -66,7 +65,7 @@ int get_choice(void) {
 enum input_type get_turn_input(int* y_ptr, int* x_ptr) {
     char* line = NULL;
     size_t length = 0;
-    ssize_t bytes_read = 0;
+    int bytes_read = 0;
 
     // to fix a problem with entering C-D
     if (feof(stdin)) {
@@ -101,6 +100,34 @@ enum input_type get_turn_input(int* y_ptr, int* x_ptr) {
         free(line);
         return INPUT_INVALID;
     }
+}
+
+int get_name(char* name) {
+    char* line = NULL;
+    size_t length = 0;
+    int bytes_read = 0;
+
+    // to fix a problem with entering C-D
+    if (feof(stdin)) {
+        clearerr(stdin);
+    }
+
+    bytes_read = getline(&line, &length, stdin);
+    // 20 chars for name + newline
+    if (bytes_read <= 0 || bytes_read > 21 ||
+        (bytes_read == 21 && line[20] != '\n')) {
+        free(line);
+        return 0;
+    }
+
+    // strip new line
+    if (line[bytes_read - 1] == '\n') {
+        line[bytes_read - 1] = '\0';
+    }
+
+    strcpy(name, line);
+    free(line);
+    return 1;
 }
 
 void exit_game(int code) {
