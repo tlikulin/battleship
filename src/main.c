@@ -16,7 +16,7 @@ int main(void) {
         exit_game(1);
     }
 
-    // rand() is later used for generating
+    // rand() is later used for generating ids,
     // ships and computer shots.
     srand(time(NULL));
 
@@ -27,7 +27,7 @@ int main(void) {
             exit_game(0);
             break;
         case CHOICE_MM_NEW_GAME:
-            run_new_game();
+            play_new_game();
             break;
         case CHOICE_MM_LOAD:
             is_in_load_menu = 1;
@@ -43,12 +43,10 @@ int main(void) {
                     wait_enter();
                     continue;
                 case CHOICE_LM_LOAD_GAME:
-                    printf("Loading game\n");
-                    wait_enter();
+                    play_saved_game();
                     continue;
                 case CHOICE_LM_SHOW_BOARD:
-                    printf("Showing board\n");
-                    wait_enter();
+                    print_saved_board();
                     continue;
                 case CHOICE_LM_RETURN:
                     is_in_load_menu = 0;

@@ -16,5 +16,5 @@ depend:
 src/board.o: src/board.h
 src/main.o: src/menus.h src/utility.h
 src/menus.o: src/board.h src/menus.h src/save-load.h src/utility.h
-src/save-load.o: src/save-load.h src/board.h
+src/save-load.o: src/board.h src/save-load.h
 src/utility.o: src/utility.h

@@ -38,4 +38,8 @@ enum choice_main_menu run_main_menu(void);
 // display the load menu and ask for input until a valid choice is entered
 enum choice_load_menu run_load_menu(void);
 // initiate a new game and make turns until end of game or exit
-void run_new_game(void);
+void play_new_game(void);
+//
+void play_saved_game(void);
+//
+void print_saved_board(void);

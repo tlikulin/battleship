@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 
 #include "board.h"
 #include "menus.h"
@@ -36,6 +37,134 @@ enum turn {
     // and not immediately make computer turn(s)
     TURN_PASSING,
 };
+
+// Main gameplay occurs here. Boards must be initialised before it is called.
+// This allows for new game and loaded games both using the same loop.
+//
+// exit_game(1) in `default:` cases means that other enum variants shall never
+// be received there. It implies either memory corruption or changes to a
+// function broke this invariant and it should be fixed.
+//
+// extra_message is used to store a response to turns, a variable is needed
+// because it is actually printed in the next iteration and between the boards
+// and input prompt.
+void run_game(board_t* player_board, board_t* computer_board) {
+    const char* extra_message = "\n";
+    int y = -1, x = -1;
+    enum turn whose_turn = TURN_PLAYER;
+
+    // The main gameplay loop.
+    // All conitnue`s inside refer to this while ("skip to next turn").
+    while (1) {
+        // Boards, stats, and extra message are printed in either case
+        clear_screen();
+        print_2_boards(player_board, computer_board, "Your side",
+                       "Opponent's side", 1);
+        printf("\n");
+        printf("%s", extra_message);
+        // Then it diverges based on whose turn it is.
+        switch (whose_turn) {
+        // Buffer turn to give the player a chance to see changes after each
+        // turn, otherwise all automatic turns would happen instantly.
+        case TURN_PASSING:
+            wait_enter();
+            whose_turn = TURN_COMPUTER;
+            break;
+        // Player's turn where coordinates, "exit"/"quit" or "save" could be
+        // inputed. All these cases are handled here.
+        case TURN_PLAYER:
+            printf("Your turn (coords, \"save\", \"exit\"): ");
+
+            switch (get_turn_input(&y, &x)) {
+            case INPUT_INVALID:
+                extra_message = "Not a valid turn, try again.\n";
+                continue;
+            case INPUT_EXIT:
+                return;
+            case INPUT_SAVE:
+                if (save_game(player_board, computer_board, "test",
+                              "Computer")) {
+                    extra_message = "The game has been saved.\n";
+                } else {
+                    extra_message = "The game could not be saved.\n";
+                }
+                continue;
+            case INPUT_COORDS:
+                switch (take_shot(computer_board, y, x)) {
+                case SHOT_HIT:
+                    extra_message = "You hit the ship. Take an extra turn.\n";
+                    continue;
+                case SHOT_ALREADY:
+                    extra_message = "You already fired at this tile "
+                                    "before. Try again.\n";
+                    continue;
+                case SHOT_INVALID:
+                    extra_message =
+                        "Invalid coordinates to fire at. Try again\n";
+                    continue;
+                case SHOT_SHIP_DOWN:
+                    extra_message = "You sunk the ship! Take an extra turn.\n";
+                    continue;
+                case SHOT_MISSED:
+                    extra_message = "You hit the water (a miss).\n";
+                    whose_turn = TURN_PASSING;
+                    continue;
+                case SHOT_WIN:
+                    clear_screen();
+                    print_2_boards(player_board, computer_board,
+                                   "Your side (Survived)",
+                                   "Opponent's side (Destroyed)", 1);
+                    printf("\nCongratulations! You win!\n");
+                    wait_enter();
+                    return;
+                default:
+                    exit_game(1);
+                    break;
+                } // switch (take_shot())
+                break;
+            default:
+                exit_game(1);
+                break;
+            } // switch (get_turn_input())
+            break;
+            // Computer's turn. It is only reachable if player shot validly but
+            // hit water. (and vice versa)
+            // Note that SHOT_ALREADY and SHOT_INVALID should never occur here.
+        case TURN_COMPUTER:
+            switch (computer_take_shot(player_board)) {
+            case SHOT_HIT:
+                extra_message =
+                    "Opponent hit the ship and takes an extra turn.\n";
+                whose_turn = TURN_PASSING;
+                continue;
+            case SHOT_SHIP_DOWN:
+                extra_message =
+                    "Opponent sunk the ship and takes an extra turn.\n";
+                whose_turn = TURN_PASSING;
+                continue;
+            case SHOT_MISSED:
+                extra_message = "Opponent hit the water (a miss). \n";
+                whose_turn = TURN_PLAYER;
+                continue;
+            case SHOT_WIN:
+                clear_screen();
+                print_2_boards(player_board, computer_board,
+                               "Your side (Destroyed)",
+                               "Opponent's side (Survived)", 1);
+                printf("\nOppenent wins! Better luck next time.\n");
+                wait_enter();
+                return;
+            default:
+                exit_game(1);
+                break;
+            } // switch (computer_take_shot()
+            break;
+        default:
+            exit_game(1);
+            break;
+        } // switch (whose_turn)
+    }
+}
 
 // EXPOSED in menu.c:
 
@@ -75,132 +204,54 @@ enum choice_load_menu run_load_menu(void) {
     return choice;
 }
 
-// Main gameplay occurs here.
-//
-// exit_game(1) in `default:` cases means that other enum variants shall never
-// be received there. It implies either memory corruption or changes to a
-// function broke this invariant and it should be fixed.
-//
-// extra_message is used to store a response to turns, a variable is needed
-// because it is actually printed in the next iteration and between the boards
-// and input prompt.
-void run_new_game(void) {
-    const char* extra_message = "\n";
-    int y = -1, x = -1;
-    enum turn whose_turn = TURN_PLAYER;
+void play_new_game(void) {
     board_t player_board, computer_board;
 
     init_board(&player_board);
     init_board(&computer_board);
-    // The main gameplay loop.
-    // All conitnue`s inside refer to this while ("skip to next turn").
-    while (1) {
-        // Boards, stats, and extra message are printed in either case
-        clear_screen();
-        print_2_boards(&player_board, &computer_board, "Your side",
-                       "Opponent's side", 1);
-        printf("\n");
-        printf("%s", extra_message);
-        // Then it diverges based on whose turn it is.
-        switch (whose_turn) {
-        // Buffer turn to give the player a chance to see changes after each
-        // turn, otherwise all automatic turns would happen instantly.
-        case TURN_PASSING:
-            wait_enter();
-            whose_turn = TURN_COMPUTER;
-            break;
-        // Player's turn where coordinates, "exit"/"quit" or "save" could be
-        // inputed. All these cases are handled here.
-        case TURN_PLAYER:
-            printf("Your turn (coords, , \"save\", \"exit\"): ");
 
-            switch (get_turn_input(&y, &x)) {
-            case INPUT_INVALID:
-                extra_message = "Not a valid turn, try again.\n";
-                continue;
-            case INPUT_EXIT:
-                return;
-            case INPUT_SAVE:
-                if (save_game(&player_board, &computer_board,
-                              "save_from_game")) {
-                    extra_message = "The game has been saved.\n";
-                } else {
-                    extra_message = "The game could not be saved.\n";
-                }
-                continue;
-            case INPUT_COORDS:
-                switch (take_shot(&computer_board, y, x)) {
-                case SHOT_HIT:
-                    extra_message = "You hit the ship. Take an extra turn.\n";
-                    continue;
-                case SHOT_ALREADY:
-                    extra_message = "You already fired at this tile "
-                                    "before. Try again.\n";
-                    continue;
-                case SHOT_INVALID:
-                    extra_message =
-                        "Invalid coordinates to fire at. Try again\n";
-                    continue;
-                case SHOT_SHIP_DOWN:
-                    extra_message = "You sunk the ship! Take an extra turn.\n";
-                    continue;
-                case SHOT_MISSED:
-                    extra_message = "You hit the water (a miss).\n";
-                    whose_turn = TURN_PASSING;
-                    continue;
-                case SHOT_WIN:
-                    clear_screen();
-                    print_2_boards(&player_board, &computer_board,
-                                   "Your side (Survived)",
-                                   "Opponent's side (Destroyed)", 1);
-                    printf("\nCongratulations! You win!\n");
-                    wait_enter();
-                    return;
-                default:
-                    exit_game(1);
-                    break;
-                } // switch (take_shot())
-                break;
-            default:
-                exit_game(1);
-                break;
-            } // switch (get_turn_input())
-            break;
-            // Computer's turn. It is only reachable if player shot validly but
-            // hit water. (and vice versa)
-            // Note that SHOT_ALREADY and SHOT_INVALID should never occur here.
-        case TURN_COMPUTER:
-            switch (computer_take_shot(&player_board)) {
-            case SHOT_HIT:
-                extra_message =
-                    "Opponent hit the ship and takes an extra turn.\n";
-                whose_turn = TURN_PASSING;
-                continue;
-            case SHOT_SHIP_DOWN:
-                extra_message =
-                    "Opponent sunk the ship and takes an extra turn.\n";
-                whose_turn = TURN_PASSING;
-                continue;
-            case SHOT_MISSED:
-                extra_message = "Opponent hit the water (a miss). \n";
-                whose_turn = TURN_PLAYER;
-                continue;
-            case SHOT_WIN:
-                clear_screen();
-                print_2_boards(&player_board, &computer_board,
-                               "Your side (Destroyed)",
-                               "Opponent's side (Survived)", 1);
-                printf("\nOppenent wins! Better luck next time.\n");
-                wait_enter();
-                return;
-            default:
-                exit_game(1);
-                break;
-            } // switch (computer_take_shot()
-            break;
-        default:
-            exit_game(1);
-            break;
-        } // switch (whose_turn)
+    run_game(&player_board, &computer_board);
+}
+
+// Loaded names are not used by this function but buffers are still needed.
+void play_saved_game(void) {
+    board_t player_board, computer_board;
+    char unused1[NAME_LEN + 1], unused2[NAME_LEN + 1];
+    printf("Enter the ID of the game to load.\n\n");
+    int id = get_choice();
+
+    if (id == 0) {
+        printf("Invalid ID: must be a positive integer\n");
+        wait_enter();
+    } else if (load_boards(id, &player_board, &computer_board, unused1,
+                           unused2) == 0) {
+        printf("\nGame with this ID has not been found.\n");
+        wait_enter();
+    } else {
+        run_game(&player_board, &computer_board);
     }
+}
+
+// First reads names from the save and then appends "'s side" to the same
+// buffers, hence extra capacity.
+void print_saved_board(void) {
+    board_t player_board, computer_board;
+    char player_title[NAME_LEN + 10], computer_title[NAME_LEN + 10];
+    printf("\nEnter the ID of the game to load.\n");
+    int id = get_choice();
+
+    if (id == 0) {
+        printf("Invalid ID: must be a positive integer\n");
+    } else if (load_boards(id, &player_board, &computer_board, player_title,
+                           computer_title) == 0) {
+        printf("\nGame with this ID has not been found.\n");
+    } else {
+        clear_screen();
+        strcat(player_title, "'s side");
+        strcat(computer_title, "'s side");
+        print_2_boards(&player_board, &computer_board, player_title,
+                       computer_title, 1);
+        printf("\n");
+    }
+    wait_enter();
 }
