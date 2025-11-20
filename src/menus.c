@@ -58,8 +58,7 @@ void run_game(board_t* player_board, board_t* computer_board) {
     while (1) {
         // Boards, stats, and extra message are printed in either case
         clear_screen();
-        print_2_boards(player_board, computer_board, "Your side",
-                       "Opponent's side", 1);
+        print_boards(player_board, computer_board, 1);
         printf("\n");
         printf("%s", extra_message);
         // Then it diverges based on whose turn it is.
@@ -82,8 +81,7 @@ void run_game(board_t* player_board, board_t* computer_board) {
             case INPUT_EXIT:
                 return;
             case INPUT_SAVE:
-                if (save_game(player_board, computer_board, "test",
-                              "Computer")) {
+                if (save_game(player_board, computer_board)) {
                     extra_message = "The game has been saved.\n";
                 } else {
                     extra_message = "The game could not be saved.\n";
@@ -111,9 +109,7 @@ void run_game(board_t* player_board, board_t* computer_board) {
                     continue;
                 case SHOT_WIN:
                     clear_screen();
-                    print_2_boards(player_board, computer_board,
-                                   "Your side (Survived)",
-                                   "Opponent's side (Destroyed)", 1);
+                    print_boards(player_board, computer_board, 1);
                     printf("\nCongratulations! You win!\n");
                     wait_enter();
                     return;
@@ -148,9 +144,7 @@ void run_game(board_t* player_board, board_t* computer_board) {
                 continue;
             case SHOT_WIN:
                 clear_screen();
-                print_2_boards(player_board, computer_board,
-                               "Your side (Destroyed)",
-                               "Opponent's side (Survived)", 1);
+                print_boards(player_board, computer_board, 1);
                 printf("\nOppenent wins! Better luck next time.\n");
                 wait_enter();
                 return;
@@ -208,23 +202,22 @@ void play_new_game(void) {
     board_t player_board, computer_board;
 
     init_board(&player_board);
+    strcpy(player_board.name, "Player");
     init_board(&computer_board);
+    strcpy(computer_board.name, "Computer");
 
     run_game(&player_board, &computer_board);
 }
 
-// Loaded names are not used by this function but buffers are still needed.
 void play_saved_game(void) {
     board_t player_board, computer_board;
-    char unused1[NAME_LEN + 1], unused2[NAME_LEN + 1];
     printf("Enter the ID of the game to load.\n\n");
     int id = get_choice();
 
     if (id == 0) {
         printf("Invalid ID: must be a positive integer\n");
         wait_enter();
-    } else if (load_game(id, &player_board, &computer_board, unused1,
-                         unused2) == 0) {
+    } else if (load_game(id, &player_board, &computer_board) == 0) {
         printf("\nGame with this ID has not been found.\n");
         wait_enter();
     } else {
@@ -232,25 +225,18 @@ void play_saved_game(void) {
     }
 }
 
-// First reads names from the save and then appends "'s side" to the same
-// buffers, hence extra capacity.
 void print_saved_board(void) {
     board_t player_board, computer_board;
-    char player_title[NAME_LEN + 10], computer_title[NAME_LEN + 10];
     printf("\nEnter the ID of the game to load.\n");
     int id = get_choice();
 
     if (id == 0) {
         printf("Invalid ID: must be a positive integer\n");
-    } else if (load_game(id, &player_board, &computer_board, player_title,
-                         computer_title) == 0) {
+    } else if (load_game(id, &player_board, &computer_board) == 0) {
         printf("\nGame with this ID has not been found.\n");
     } else {
         clear_screen();
-        strcat(player_title, "'s side");
-        strcat(computer_title, "'s side");
-        print_2_boards(&player_board, &computer_board, player_title,
-                       computer_title, 1);
+        print_boards(&player_board, &computer_board, 1);
         printf("\n");
     }
     wait_enter();
@@ -258,7 +244,6 @@ void print_saved_board(void) {
 
 void print_all_saves(void) {
     board_t board1, board2;
-    char name1[NAME_LEN + 1], name2[NAME_LEN + 1];
     int id, status;
     FILE* savefile = fopen(SAVEFILE_NAME, "r");
     if (savefile == NULL) {
@@ -270,13 +255,12 @@ void print_all_saves(void) {
     clear_screen();
     printf("Listing all games saved in the file:\n\n");
 
-    while ((status = read_next_save(savefile, &id, name1, name2, &board1,
-                                    &board2)) != -1) {
+    while ((status = read_next_save(savefile, &id, &board1, &board2)) != -1) {
         if (status == 1) {
-            printf("ID=%d: %s (made %d hits/%d shots) vs. %s (made %d hits/%d "
+            printf("ID=%d:\t%s (made %d hits/%d shots) vs. %s (made %d hits/%d "
                    "shots)\n",
-                   id, name1, board2.hits, board2.shots, name2, board1.hits,
-                   board1.shots);
+                   id, board1.name, board2.hits, board2.shots, board2.name,
+                   board1.hits, board1.shots);
         }
     }
 
@@ -287,7 +271,6 @@ void print_all_saves(void) {
 
 void print_player_saves(void) {
     board_t board1, board2;
-    char name1[NAME_LEN + 1], name2[NAME_LEN + 1];
     char search_name[NAME_LEN + 1];
     int id, status;
     FILE* savefile = fopen(SAVEFILE_NAME, "r");
@@ -305,14 +288,13 @@ void print_player_saves(void) {
     clear_screen();
     printf("Listing all games with player %s:\n\n", search_name);
 
-    while ((status = read_next_save(savefile, &id, name1, name2, &board1,
-                                    &board2)) != -1) {
-        if (status == 1 && (strcmp(search_name, name1) == 0 ||
-                            strcmp(search_name, name2) == 0)) {
-            printf("ID=%d: %s (made %d hits/%d shots) vs. %s (made %d hits/%d "
+    while ((status = read_next_save(savefile, &id, &board1, &board2)) != -1) {
+        if (status == 1 && (strcmp(search_name, board1.name) == 0 ||
+                            strcmp(search_name, board2.name) == 0)) {
+            printf("ID=%d:\t%s (made %d hits/%d shots) vs. %s (made %d hits/%d "
                    "shots)\n",
-                   id, name1, board2.hits, board2.shots, name2, board1.hits,
-                   board1.shots);
+                   id, board1.name, board2.hits, board2.shots, board2.name,
+                   board1.hits, board1.shots);
         }
     }
 

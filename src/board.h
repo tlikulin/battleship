@@ -9,6 +9,8 @@
 // Ships: 5 4 3 2 2
 #define SHIPS_TOTAL 5
 extern const int SHIPS_SIZES[SHIPS_TOTAL];
+// the maximum number of characters allowed in the name field
+#define NAME_LEN 20
 
 // the values a tile can have
 enum tile_type {
@@ -22,6 +24,7 @@ enum tile_type {
 // a board storing a grid (2d array) of tiles
 typedef struct board {
     unsigned char grid[GRID_SIZE][GRID_SIZE];
+    char name[NAME_LEN + 1];
     int targets_left;
     int shots, hits;
 } board_t;
@@ -39,8 +42,7 @@ enum shot_result {
 // initializes a board (clears and then populates with ships)
 void init_board(board_t* board);
 // prints 2 boards side-to-side with provided titles (if any)
-void print_2_boards(board_t* board1, board_t* board2, const char* title1,
-                    const char* title2, int visibility);
+void print_boards(board_t* board1, board_t* board2, int visibility);
 // shoot at the board at given coords
 // returns the outcome (descibed at the enum)
 enum shot_result take_shot(board_t* board, int y, int x);

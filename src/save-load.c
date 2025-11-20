@@ -11,8 +11,7 @@
 // Reads a line from the file using getline() - must free.
 // Names (first 2 fields) are read byte by byte until a comma is found or name
 // becomes too long. The rest is scanned by sscanf().
-int read_next_save(FILE* file, int* id, char* name1, char* name2,
-                   board_t* board1, board_t* board2) {
+int read_next_save(FILE* file, int* id, board_t* board1, board_t* board2) {
     char* line = NULL;
     size_t length = 0;
     int bytes_read, offset1, offset2;
@@ -42,10 +41,10 @@ int read_next_save(FILE* file, int* id, char* name1, char* name2,
             return 0;
         }
 
-        name1[offset1] = line[offset1];
+        board1->name[offset1] = line[offset1];
     }
-    name1[offset1] = '\0'; // terminate name
-    ++offset1;             // eat comma
+    board1->name[offset1] = '\0'; // terminate name
+    ++offset1;                    // consume comma
     for (offset2 = 0; line[offset1 + offset2] != ','; ++offset2) {
         // name too long
         if (offset2 == NAME_LEN) {
@@ -53,10 +52,10 @@ int read_next_save(FILE* file, int* id, char* name1, char* name2,
             return 0;
         }
 
-        name2[offset2] = line[offset1 + offset2];
+        board2->name[offset2] = line[offset1 + offset2];
     }
-    name2[offset2] = '\0'; // terminate name
-    ++offset2;             // eat comma
+    board2->name[offset2] = '\0'; // terminate name
+    ++offset2;                    // consume comma
 
     // Reading the rest of the saved game
     if (sscanf(line + offset1 + offset2, "%d,%d,%d,%d,%d,%d,%d,%64s,%64s", id,
@@ -88,8 +87,7 @@ int read_next_save(FILE* file, int* id, char* name1, char* name2,
 
 const char* SAVEFILE_NAME = "battleship-savefile.txt";
 
-int save_game(board_t* board1, board_t* board2, const char* name1,
-              const char* name2) {
+int save_game(board_t* board1, board_t* board2) {
     char line[512] = {0};
     int pos, id;
     FILE* savefile = fopen(SAVEFILE_NAME, "a");
@@ -100,9 +98,10 @@ int save_game(board_t* board1, board_t* board2, const char* name1,
         id = rand();
     while (id < 1);
 
-    pos = sprintf(line, "%s,%s,%d,%d,%d,%d,%d,%d,%d,", name1, name2, id,
-                  board1->targets_left, board1->hits, board1->shots,
-                  board2->targets_left, board2->hits, board2->shots);
+    pos =
+        sprintf(line, "%s,%s,%d,%d,%d,%d,%d,%d,%d,", board1->name, board2->name,
+                id, board1->targets_left, board1->hits, board1->shots,
+                board2->targets_left, board2->hits, board2->shots);
 
     for (int y = 0; y < GRID_SIZE; ++y) {
         for (int x = 0; x < GRID_SIZE; ++x) {
@@ -127,23 +126,19 @@ int save_game(board_t* board1, board_t* board2, const char* name1,
     }
 }
 
-int load_game(int id, board_t* board1, board_t* board2, char* name1,
-              char* name2) {
+int load_game(int id, board_t* board1, board_t* board2) {
     board_t temp_board1, temp_board2;
     int status, temp_id;
-    char name1_temp[NAME_LEN + 1], name2_temp[NAME_LEN + 1];
     FILE* savefile = fopen(SAVEFILE_NAME, "r");
     if (savefile == NULL) {
         return 0;
     }
 
-    while ((status = read_next_save(savefile, &temp_id, name1_temp, name2_temp,
-                                    &temp_board1, &temp_board2)) != -1) {
+    while ((status = read_next_save(savefile, &temp_id, &temp_board1,
+                                    &temp_board2)) != -1) {
         if (status == 1 && temp_id == id) {
             memcpy(board1, &temp_board1, sizeof(board_t));
             memcpy(board2, &temp_board2, sizeof(board_t));
-            strcpy(name1, name1_temp);
-            strcpy(name2, name2_temp);
             fclose(savefile);
             return 1;
         }

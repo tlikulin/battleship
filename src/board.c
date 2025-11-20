@@ -280,17 +280,12 @@ void init_board(board_t* board) {
 
 // visibility: if 0th bit (& 1) is set, ships in board1 are visible,
 // and if 1st bit (& 2) is set, ships in board2 are visible
-void print_2_boards(board_t* board1, board_t* board2, const char* title1,
-                    const char* title2, int visibility) {
-    // print titles above the boards (if any)
-    if (title1) {
-        printf("   %s", title1);
-    }
-    if (title2) {
-        // uses ANSI escape code to move cursor to right position
-        printf("\x1B[%dG", 2 * GRID_SIZE + 18);
-        printf("%s", title2);
-    }
+void print_boards(board_t* board1, board_t* board2, int visibility) {
+    // print titles above the boards
+    printf("   %s's side", board1->name);
+    // uses ANSI escape code to move cursor to right position
+    printf("\x1B[%dG", 2 * GRID_SIZE + 18);
+    printf("%s's side", board2->name);
     printf("\n");
     // print stats - number of shots and hits
     printf("   Progress: %d/%d", board1->hits, board1->shots);
