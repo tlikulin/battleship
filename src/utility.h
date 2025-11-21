@@ -28,6 +28,6 @@ enum input_type get_turn_input(int* y_ptr, int* x_ptr);
 //
 int get_name(char* name);
 // Exit the game with return code and message
-void exit_game(int code);
+void exit_app(int code);
 // Clear the terminal screen
 void clear_screen(void);

@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "board.h"
 
@@ -264,7 +265,7 @@ void print_board_row(board_t* board, int y, int is_own) {
 
 const int SHIPS_SIZES[SHIPS_TOTAL] = {4, 3, 3, 2, 2};
 
-void init_board(board_t* board) {
+void init_board(board_t* board, const char* name) {
     for (int y = 0; y < GRID_SIZE; ++y) {
         for (int x = 0; x < GRID_SIZE; ++x) {
             board->grid[y][x] = TILE_WATER;
@@ -274,6 +275,7 @@ void init_board(board_t* board) {
     board->targets_left = 0;
     board->hits = 0;
     board->shots = 0;
+    strcpy(board->name, name);
 
     populate_board(board);
 }

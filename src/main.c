@@ -13,7 +13,7 @@ int main(void) {
     // Forbid using the game non-interactively.
     if (!isatty(0)) {
         printf("This app is for interactive usage only (no pipe)\n");
-        exit_game(1);
+        exit_app(1);
     }
 
     // rand() is later used for generating ids,
@@ -24,7 +24,7 @@ int main(void) {
     while (1) {
         switch (run_main_menu()) {
         case CHOICE_MM_EXIT:
-            exit_game(0);
+            exit_app(0);
             break;
         case CHOICE_MM_NEW_GAME:
             play_new_game();
@@ -50,13 +50,13 @@ int main(void) {
                     is_in_load_menu = 0;
                     continue;
                 default:
-                    exit_game(1);
+                    exit_app(1);
                     break;
                 } // switch (run_load_menu())
             }
             break;
         default:
-            exit_game(1);
+            exit_app(1);
             break;
         } // switch (run_main_menu())
     }

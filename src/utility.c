@@ -114,7 +114,7 @@ enum input_type get_turn_input(int* y_ptr, int* x_ptr) {
 }
 
 int get_name(char* name) {
-    char* line = NULL;
+    char *line = NULL, c;
     size_t length = 0;
     int bytes_read = 0;
 
@@ -124,16 +124,36 @@ int get_name(char* name) {
     }
 
     bytes_read = getline(&line, &length, stdin);
-    // 20 chars for name + newline
-    if (bytes_read <= 0 || bytes_read > 21 ||
-        (bytes_read == 21 && line[20] != '\n')) {
+
+    if (bytes_read == -1) {
         free(line);
         return 0;
     }
 
-    // strip new line
-    if (line[bytes_read - 1] == '\n') {
-        line[bytes_read - 1] = '\0';
+    // locate newline (if present), adjust read characters amount
+    for (int i = 0; line[i] != '\0' && i <= 21; ++i) {
+        if (line[i] == '\n') {
+            line[i] = '\0';
+            bytes_read = i;
+            break;
+        }
+    }
+
+    // name must have [1;20] characters
+    if (bytes_read == 0 || bytes_read > 20) {
+        free(line);
+        return 0;
+    }
+
+    // validate all characters in the name
+    // (must be a-zA-Z0-9_-)
+    for (int i = 0; i < bytes_read; ++i) {
+        c = line[i];
+
+        if (!isalnum(c) && c != '-' && c != '_') {
+            free(line);
+            return 0;
+        }
     }
 
     strcpy(name, line);
@@ -141,7 +161,7 @@ int get_name(char* name) {
     return 1;
 }
 
-void exit_game(int code) {
+void exit_app(int code) {
     if (code == 0) {
         printf("Exit\n");
     } else {

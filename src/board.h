@@ -40,7 +40,7 @@ enum shot_result {
 };
 
 // initializes a board (clears and then populates with ships)
-void init_board(board_t* board);
+void init_board(board_t* board, const char* name);
 // prints 2 boards side-to-side with provided titles (if any)
 void print_boards(board_t* board1, board_t* board2, int visibility);
 // shoot at the board at given coords

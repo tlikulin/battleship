@@ -41,7 +41,7 @@ enum turn {
 // Main gameplay occurs here. Boards must be initialised before it is called.
 // This allows for new game and loaded games both using the same loop.
 //
-// exit_game(1) in `default:` cases means that other enum variants shall never
+// exit_app(1) in `default:` cases means that other enum variants shall never
 // be received there. It implies either memory corruption or changes to a
 // function broke this invariant and it should be fixed.
 //
@@ -72,7 +72,7 @@ void run_game(board_t* player_board, board_t* computer_board) {
         // Player's turn where coordinates, "exit"/"quit" or "save" could be
         // inputed. All these cases are handled here.
         case TURN_PLAYER:
-            printf("Your turn (coords, \"save\", \"exit\"): ");
+            printf("Your turn (coords/\"save\"/\"exit\"): ");
 
             switch (get_turn_input(&y, &x)) {
             case INPUT_INVALID:
@@ -114,12 +114,12 @@ void run_game(board_t* player_board, board_t* computer_board) {
                     wait_enter();
                     return;
                 default:
-                    exit_game(1);
+                    exit_app(1);
                     break;
                 } // switch (take_shot())
                 break;
             default:
-                exit_game(1);
+                exit_app(1);
                 break;
             } // switch (get_turn_input())
             break;
@@ -149,12 +149,12 @@ void run_game(board_t* player_board, board_t* computer_board) {
                 wait_enter();
                 return;
             default:
-                exit_game(1);
+                exit_app(1);
                 break;
             } // switch (computer_take_shot()
             break;
         default:
-            exit_game(1);
+            exit_app(1);
             break;
         } // switch (whose_turn)
     }
@@ -200,11 +200,15 @@ enum choice_load_menu run_load_menu(void) {
 
 void play_new_game(void) {
     board_t player_board, computer_board;
+    char player_name[NAME_LEN + 1];
 
-    init_board(&player_board);
-    strcpy(player_board.name, "Player");
-    init_board(&computer_board);
-    strcpy(computer_board.name, "Computer");
+    clear_screen();
+    printf("Enter your (user)name.\n");
+    printf("Letters, digits, '-', and '_' only; 20 characters max.\n");
+    printf("> ");
+
+    init_board(&player_board, get_name(player_name) ? player_name : "Player");
+    init_board(&computer_board, "Computer");
 
     run_game(&player_board, &computer_board);
 }
@@ -282,7 +286,7 @@ void print_player_saves(void) {
 
     printf("\nEnter the name to search for: ");
     if (!get_name(search_name)) {
-        exit_game(1);
+        exit_app(1);
     }
 
     clear_screen();
