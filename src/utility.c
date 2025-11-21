@@ -1,4 +1,5 @@
 #include <ctype.h>
+#include <limits.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -32,8 +33,9 @@ void wait_enter(void) {
 
 // returns 0 if input was invalid
 int get_choice(void) {
-    int choice = 0;
+    long choice = 0;
     char* line = NULL;
+    char* end_ptr = NULL;
     size_t length = 0;
 
     // to fix a problem with entering C-D
@@ -49,14 +51,21 @@ int get_choice(void) {
         }
         free(line);
         return 0;
-        // -1 (==EOF) - couldn't read at all, 0 - didn't find a %d
-    } else if (sscanf(line, " %d", &choice) < 1) {
+    }
+
+    choice = strtol(line, &end_ptr, 10);
+    // no integer found or extra stuff afterwards
+    if (line == end_ptr || (*end_ptr != '\0' && *end_ptr != '\n')) {
         free(line);
         return 0;
-    } else {
-        free(line);
-        return choice;
     }
+    free(line);
+    // cannot fit in an int
+    if (choice > INT_MAX || choice < INT_MIN) {
+        return 0;
+    }
+
+    return choice;
 }
 
 // uses getline (internally uses malloc) to read a whole line and then parses
@@ -64,8 +73,8 @@ int get_choice(void) {
 // input (case sensitive) coords: "a4", "g7", etc. (case insensitive)
 enum input_type get_turn_input(int* y_ptr, int* x_ptr) {
     char* line = NULL;
-    size_t length = 0;
-    int bytes_read = 0;
+    size_t length;
+    int bytes_read;
 
     // to fix a problem with entering C-D
     if (feof(stdin)) {
@@ -76,15 +85,17 @@ enum input_type get_turn_input(int* y_ptr, int* x_ptr) {
 
     // check for attempt to exit
     if (bytes_read >= 4 &&
-        (strncmp(line, "exit", 4) == 0 || strncmp(line, "quit", 4) == 0)) {
+        (strcmp(line, "exit") == 0 || strcmp(line, "quit") == 0 ||
+         strcmp(line, "exit\n") == 0 || strcmp(line, "quit\n") == 0)) {
         free(line);
         return INPUT_EXIT;
         // check for attempt to save game
-    } else if (bytes_read >= 4 && strncmp(line, "save", 4) == 0) {
+    } else if (bytes_read >= 4 &&
+               (strcmp(line, "save") == 0 || strcmp(line, "save\n") == 0)) {
         free(line);
         return INPUT_SAVE;
         // right amount of chars for coords
-    } else if ((bytes_read >= 3 && isspace(line[2])) || bytes_read == 2) {
+    } else if ((bytes_read >= 3 && line[2] == '\n') || bytes_read == 2) {
         char first = line[0], second = line[1];
         free(line);
 
