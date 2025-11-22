@@ -41,7 +41,9 @@ int main(void) {
                     print_player_saves();
                     continue;
                 case CHOICE_LM_LOAD_GAME:
-                    play_saved_game();
+                    if (play_saved_game()) {
+                        is_in_load_menu = 0;
+                    }
                     continue;
                 case CHOICE_LM_SHOW_BOARD:
                     print_saved_board();

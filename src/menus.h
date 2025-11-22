@@ -40,7 +40,7 @@ enum choice_load_menu run_load_menu(void);
 // initiate a new game and make turns until end of game or exit
 void play_new_game(void);
 //
-void play_saved_game(void);
+int play_saved_game(void);
 //
 void print_saved_board(void);
 //

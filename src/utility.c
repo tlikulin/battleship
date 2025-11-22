@@ -131,7 +131,7 @@ int get_name(char* name) {
     }
 
     // locate newline (if present), adjust read characters amount
-    for (int i = 0; line[i] != '\0' && i <= 21; ++i) {
+    for (int i = 0; line[i] != '\0' && i <= 20; ++i) {
         if (line[i] == '\n') {
             line[i] = '\0';
             bytes_read = i;

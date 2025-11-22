@@ -21,7 +21,7 @@ const int DIRECTIONS[DIRECTIONS_TOTAL] = {DIRECTION_UP, DIRECTION_DOWN,
 const char* BOARDS_BORDERLINE = "      #      ";
 
 // get the character representation of a given tile type
-char tile_to_char(enum tile_type tile, int is_own);
+void print_tile(enum tile_type tile, int is_own);
 // Checks if the given coords are within the board
 int is_inbounds(int y, int x);
 // fills the board with the ships randomly
@@ -57,23 +57,31 @@ void print_column_numbers(void);
 void print_board_row(board_t* board, int y, int is_own);
 
 // is_own = should undiscovered ships be displayed
-char tile_to_char(enum tile_type tile, int is_own) {
+void print_tile(enum tile_type tile, int is_own) {
     switch (tile) {
     case TILE_WATER:
-        return ' ';
+        printf("%c", ' ');
+        break;
     case TILE_WATER_HIT:
-        return 'O';
+        // blue
+        printf("\x1B[38;5;12m%c\x1B[0m", 'O');
+        break;
     case TILE_SHIP:
         if (is_own) {
-            return 's';
+            // orange
+            printf("\x1B[38;5;9m%c\x1B[0m", 's');
         } else {
-            return ' ';
+            printf("%c", ' ');
         }
+        break;
     case TILE_SHIP_HIT:
-        return 'X';
-    case TILE_NONE:
+        // red
+        printf("\x1B[38;5;196m%c\x1B[0m", 'X');
+        break;
     default:
-        return '?';
+        // purple
+        printf("\x1B[38;5;5m%c\x1B[0m", '?');
+        break;
     }
 }
 
@@ -255,10 +263,11 @@ void print_board_row(board_t* board, int y, int is_own) {
     printf("%c ", 'A' + y); // 'A' + 0 is 'A', 'A' + 1 is 'B', etc.
     // '|'-separated tiles
     for (int x = 0; x < GRID_SIZE - 1; ++x) {
-        printf("%c|", tile_to_char(board->grid[y][x], is_own));
+        print_tile(board->grid[y][x], is_own);
+        putchar('|');
     }
     // last column, has no separator after
-    printf("%c", tile_to_char(board->grid[y][GRID_SIZE - 1], is_own));
+    print_tile(board->grid[y][GRID_SIZE - 1], is_own);
 }
 
 // EXPOSED in board.h:

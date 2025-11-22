@@ -8,8 +8,10 @@
 
 // LOCAL:
 
-// the logo displayed in the main menu
-// Original is in extra/battleship_figlet.txt
+// The logos displayed in the main menu and the load menu.
+// Backslahes are to be escaped, so not aligned.
+// Originals are in extra/figlet.txt
+
 const char* BATTLESHIP_LOGO =
     " ____        _   _   _          _     _            \n"
     "| __ )  __ _| |_| |_| | ___ ___| |__ (_)_ __       \n"
@@ -17,6 +19,12 @@ const char* BATTLESHIP_LOGO =
     "| |_) | (_| | |_| |_| |  __\\__ | | | | | |_) |    \n"
     "|____/ \\__,_|\\__|\\__|_|\\___|___|_| |_|_| .__/  \n"
     "                                       |_|         \n";
+
+const char* LOAD_LOGO = " _                    _        \n"
+                        "| |    ___   __ _  __| |       \n"
+                        "| |   / _ \\ / _` |/ _` |      \n"
+                        "| |__| (_) | (_| | (_| |       \n"
+                        "|_____\\___/ \\__,_|\\__,_|    \n";
 
 const char* MAIN_MENU_CHOICES = "1.) Play a new game \n"
                                 "2.) Load already saved game \n"
@@ -184,6 +192,7 @@ enum choice_load_menu run_load_menu(void) {
     int choice = CHOICE_LM_NONE;
 
     clear_screen();
+    printf("%s\n", LOAD_LOGO);
     printf("%s", LOAD_MENU_CHOICES);
     choice = get_choice();
 
@@ -213,7 +222,7 @@ void play_new_game(void) {
     run_game(&player_board, &computer_board);
 }
 
-void play_saved_game(void) {
+int play_saved_game(void) {
     board_t player_board, computer_board;
     printf("Enter the ID of the game to load.\n\n");
     int id = get_choice();
@@ -221,11 +230,14 @@ void play_saved_game(void) {
     if (id == 0) {
         printf("Invalid ID: must be a positive integer\n");
         wait_enter();
+        return 0;
     } else if (load_game(id, &player_board, &computer_board) == 0) {
         printf("\nGame with this ID has not been found.\n");
         wait_enter();
+        return 0;
     } else {
         run_game(&player_board, &computer_board);
+        return 1;
     }
 }
 
@@ -261,7 +273,7 @@ void print_all_saves(void) {
 
     while ((status = read_next_save(savefile, &id, &board1, &board2)) != -1) {
         if (status == 1) {
-            printf("ID=%d:\t%s (made %d hits/%d shots) vs. %s (made %d hits/%d "
+            printf("ID %d:\t%s (made %d hits/%d shots) vs. %s (made %d hits/%d "
                    "shots)\n",
                    id, board1.name, board2.hits, board2.shots, board2.name,
                    board1.hits, board1.shots);
@@ -286,7 +298,10 @@ void print_player_saves(void) {
 
     printf("\nEnter the name to search for: ");
     if (!get_name(search_name)) {
-        exit_app(1);
+        printf("Not a valid name.\n");
+        fclose(savefile);
+        wait_enter();
+        return;
     }
 
     clear_screen();
@@ -295,7 +310,7 @@ void print_player_saves(void) {
     while ((status = read_next_save(savefile, &id, &board1, &board2)) != -1) {
         if (status == 1 && (strcmp(search_name, board1.name) == 0 ||
                             strcmp(search_name, board2.name) == 0)) {
-            printf("ID=%d:\t%s (made %d hits/%d shots) vs. %s (made %d hits/%d "
+            printf("ID %d:\t%s (made %d hits/%d shots) vs. %s (made %d hits/%d "
                    "shots)\n",
                    id, board1.name, board2.hits, board2.shots, board2.name,
                    board1.hits, board1.shots);
