@@ -4,8 +4,26 @@
 #include <unistd.h>
 
 #include "menus.h"
-// #include "save-load.h"
 #include "utility.h"
+
+/*
+ * This is the file which contains main().
+ * There is only logic relating to branching
+ * based on main/load menu choice.
+ *
+ * The implementations itself are located in separate files.
+ * A header file only contains type definitions and prototypes of functions used
+ * by other modules, while the corresponding source file contains bodies of
+ * those functions plus internal helpers.
+ *
+ * Namely:
+ * board: board initialization, printing, updating (shots).
+ * menus: displaying and getting choice from main/load menu, also a function for
+ *        each menu choice.
+ * save-load: saving state of the game to the file and reading
+ *            the save back.
+ * utility: getting user input (with validation) and misc.
+ */
 
 int main(void) {
     int is_in_load_menu = 0;
@@ -16,11 +34,11 @@ int main(void) {
         exit_app(1);
     }
 
-    // rand() is later used for generating ids,
+    // rand() is later used for generating IDs,
     // ships and computer shots.
     srand(time(NULL));
 
-    // main app loop (infinite)
+    // infinite main loop
     while (1) {
         switch (run_main_menu()) {
         case CHOICE_MM_EXIT:
@@ -33,7 +51,6 @@ int main(void) {
             is_in_load_menu = 1;
             while (is_in_load_menu) {
                 switch (run_load_menu()) {
-                // TODO: Do actual loading
                 case CHOICE_LM_LIST_ALL:
                     print_all_saves();
                     continue;

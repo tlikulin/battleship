@@ -13,8 +13,7 @@
 // Where:
 //
 // name1/2: char[] max 20 (alphanum + -_)
-// id: size_t
-// targets_left1/2,hits1/2,shots1/2: all ints
+// id,targets_left1/2,hits1/2,shots1/2: all ints
 // grid1/grid2 sequence of GRID_SIZE * GRID_SIZE digits representing enum
 //  tile_type values
 //

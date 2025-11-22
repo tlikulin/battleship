@@ -7,28 +7,23 @@
 
 #include "utility.h"
 
-// LOCAL:
+// EXPOSED in utility.h:
 
 // Reads all extra characters left in stdin until end of line or EOF.
-// Currently only used for wait_enter(), other input functions
-// use getline(), so they already read to end of line.
-void flush_stdin(void) {
+void wait_enter(void) {
+    int c; // declared int so that it can catch EOF (-1)
+
+    printf("Press enter to continue");
+
+    // to fix a problem with entering C-D
     if (feof(stdin)) {
         clearerr(stdin);
         return;
     }
 
-    int c; // declared int so that it can catch EOF (-1)
     do
         c = getchar();
     while (c != EOF && c != '\n');
-}
-
-// EXPOSED in utility.h:
-
-void wait_enter(void) {
-    printf("Press enter to continue");
-    flush_stdin(); // wait for enter and discard all
 }
 
 // returns 0 if input was invalid
@@ -68,9 +63,11 @@ int get_choice(void) {
     return choice;
 }
 
-// uses getline (internally uses malloc) to read a whole line and then parses
-// (must free in the end) exit: containg "exit" or "quit" in the beginning of
-// input (case sensitive) coords: "a4", "g7", etc. (case insensitive)
+// Uses getline() to read a whole line and then parses.
+// (must free in the end)
+// coords: "a4", "g7", etc. (case insensitive)
+// save: "save" (case sensitive)
+// exit: "exit" or "quit" (case sensitive)
 enum input_type get_turn_input(int* y_ptr, int* x_ptr) {
     char* line = NULL;
     size_t length;
@@ -113,6 +110,8 @@ enum input_type get_turn_input(int* y_ptr, int* x_ptr) {
     }
 }
 
+// Name must be 20 characters maximum (excluding new line) and have only
+// specified characters (alphanum + -_).
 int get_name(char* name) {
     char *line = NULL, c;
     size_t length = 0;
@@ -161,6 +160,8 @@ int get_name(char* name) {
     return 1;
 }
 
+// Used to exit otherwise infinite loops.
+// Normally, only 0 is expected.
 void exit_app(int code) {
     if (code == 0) {
         printf("Exit\n");
@@ -170,6 +171,8 @@ void exit_app(int code) {
     exit(code);
 }
 
+// Uses ANSI escape codes to clear screen and move cursos to the top-left
+// corner.
 void clear_screen(void) {
     printf("\x1B[2J\x1B[1;1H");
 }

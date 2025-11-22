@@ -6,6 +6,11 @@
 
 // LOCAL:
 
+// Ships: 4 3 3 2 2
+#define SHIPS_TOTAL 5
+const int SHIPS_SIZES[SHIPS_TOTAL] = {4, 3, 3, 2, 2};
+
+// Represents directions in which some functions may propagate.
 enum direction {
     DIRECTION_NONE = 0,
     DIRECTION_UP,
@@ -14,48 +19,52 @@ enum direction {
     DIRECTION_RIGHT,
 };
 
+// All possible direction to iterate through.
 #define DIRECTIONS_TOTAL 4
 const int DIRECTIONS[DIRECTIONS_TOTAL] = {DIRECTION_UP, DIRECTION_DOWN,
                                           DIRECTION_LEFT, DIRECTION_RIGHT};
 
+// What separates left and right boards.
 const char* BOARDS_BORDERLINE = "      #      ";
 
-// get the character representation of a given tile type
+// The character representation of a given tile type with given visibility.
 void print_tile(enum tile_type tile, int is_own);
-// Checks if the given coords are within the board
+// Checks if the given coords are within the board.
 int is_inbounds(int y, int x);
-// fills the board with the ships randomly
+// Fills the board with the ships randomly.
 void populate_board(board_t* board);
-// checks if a cell is touching (incl. diagonally and itself) a ship tile
+// Checks if a cell is touching (incl. diagonally and itself) a ship tile.
 int is_touching_ship(board_t* board, int y, int x);
-// checks if a ship with given type, orientation and coords can be placed
+// Checks if a ship with given size, orientation and coords can be placed
 int can_place_ship(board_t* board, int ship_size, int is_horizontal, int y,
                    int x);
-// places a ship with given type, orientation and coords
-// overrides old tiles, can_place_ship is expected to be run before
+// Places a ship with given size, orientation and coords.
+// Overrides old tiles, can_place_ship() is expected to be run before.
 void place_ship(board_t* board, int ship_size, int is_horizontal, int y, int x);
-// checks if the ship containting the given point has been fully destroyed
+// Checks if the ship containting the given point has been fully destroyed.
 int is_ship_downis_ship_down(board_t* board, int y, int x);
-// recursive helper for is_ship_down(), should not be called independently
+// Recursive helper for is_ship_down(), should not be called independently.
 int is_ship_down_inner(board_t* board, int y, int x, enum direction direction);
-// puts discovered water tiles aroung the ship containing the given coord
-// suposet to run after checking if there is indeed a sunk ship there (func
-// above)
+// Puts discovered water tiles aroung the ship containing the given coord
+// supposed to run after checking if there is indeed a sunk ship there (func
+// above).
 void discover_around_sunk_ship(board_t* board, int y, int x);
-// recursive helper for is_ship_down(), should not be called independently
+// Recursive helper for is_ship_down(), should not be called independently.
 void discover_around_sunk_ship_inner(board_t* board, int y, int x,
                                      enum direction direction);
-// Changes the tile from WATER to WATER_HIT, if can't - does nothing
+// Changes the tile from WATER to WATER_HIT, if can't - does nothing.
 void discover_water(board_t* board, int y, int x);
-// modify *y_ptr, *x_ptr as in a step in the given direction
+// Modify *y_ptr, *x_ptr as in a step in the given direction.
 void move_in_direction(int* y_ptr, int* x_ptr, enum direction direction);
-// prints space-separated column numbers above the boards
+// Prints space-separated column numbers above the boards.
 // e.g. "  1 2 3 4 5 6 7 8"
+// Note: only 1-digit board size is supported.
 void print_column_numbers(void);
-// prints a row of the board with given index, includes letter at the beggining
+// Prints a row of the board with given index, includes letter at the beggining.
 // e.g. "C  | | | |s|O| | "
 void print_board_row(board_t* board, int y, int is_own);
 
+// Uses ANSI escape codes to color different tile types distinctively.
 // is_own = should undiscovered ships be displayed
 void print_tile(enum tile_type tile, int is_own) {
     switch (tile) {
@@ -85,10 +94,12 @@ void print_tile(enum tile_type tile, int is_own) {
     }
 }
 
+// Does not require a specific board: size is same for all.
 int is_inbounds(int y, int x) {
     return 0 <= x && x < GRID_SIZE && 0 <= y && y < GRID_SIZE;
 }
 
+// The entire 3x3 area centered at the (x, y) is checked.
 int is_touching_ship(board_t* board, int y, int x) {
     for (int dy = -1; dy <= 1; ++dy)
         for (int dx = -1; dx <= 1; ++dx)
@@ -99,6 +110,8 @@ int is_touching_ship(board_t* board, int y, int x) {
     return 0;
 }
 
+// Simulates each tile of the potential ship, runs bounds and touching checks
+// for it.
 int can_place_ship(board_t* board, int ship_size, int is_horizontal, int y,
                    int x) {
     if (is_horizontal) {
@@ -131,6 +144,7 @@ void place_ship(board_t* board, int ship_size, int is_horizontal, int y,
     }
 }
 
+// Should by used on empty board.
 void populate_board(board_t* board) {
     int ship_size, is_horizontal;
     int y, x;
@@ -153,6 +167,7 @@ void populate_board(board_t* board) {
     }
 }
 
+// Calls recursive checks in each direction from given tile.
 int is_ship_down(board_t* board, int y, int x) {
     if (!is_inbounds(y, x) || board->grid[y][x] != TILE_SHIP_HIT) {
         return 0;
@@ -167,6 +182,8 @@ int is_ship_down(board_t* board, int y, int x) {
     return 1;
 }
 
+// Recursively propagate in given direction.
+// Continues until in-bounds and encounters hit ship tiles only.
 int is_ship_down_inner(board_t* board, int y, int x, enum direction direction) {
     if (!is_inbounds(y, x)) {
         return 1;
@@ -185,6 +202,7 @@ int is_ship_down_inner(board_t* board, int y, int x, enum direction direction) {
     }
 }
 
+// Calls recursive reveals in each direction from given tile.
 void discover_around_sunk_ship(board_t* board, int y, int x) {
     if (!is_inbounds(y, x) || board->grid[y][x] != TILE_SHIP_HIT) {
         return;
@@ -195,6 +213,9 @@ void discover_around_sunk_ship(board_t* board, int y, int x) {
     }
 }
 
+// Recursive water discovery around sunk ship.
+// Discovers itself and 2 tiles perpendicular to motion.
+// Continues until next tile is also ship tile.
 void discover_around_sunk_ship_inner(board_t* board, int y, int x,
                                      enum direction direction) {
     if (!is_inbounds(y, x)) {
@@ -224,12 +245,14 @@ void discover_around_sunk_ship_inner(board_t* board, int y, int x,
     }
 }
 
+// Change water to discovered water if possible.
 void discover_water(board_t* board, int y, int x) {
     if (is_inbounds(y, x) && board->grid[y][x] == TILE_WATER) {
         board->grid[y][x] = TILE_WATER_HIT;
     }
 }
 
+// advance the coords in right direction.
 void move_in_direction(int* y_ptr, int* x_ptr, enum direction direction) {
     switch (direction) {
     case DIRECTION_UP:
@@ -272,8 +295,10 @@ void print_board_row(board_t* board, int y, int is_own) {
 
 // EXPOSED in board.h:
 
-const int SHIPS_SIZES[SHIPS_TOTAL] = {4, 3, 3, 2, 2};
-
+// 1) fills with water;
+// 2) sets stats to 0;
+// 3) copies name;
+// 4) generates random ships.
 void init_board(board_t* board, const char* name) {
     for (int y = 0; y < GRID_SIZE; ++y) {
         for (int x = 0; x < GRID_SIZE; ++x) {
@@ -290,25 +315,20 @@ void init_board(board_t* board, const char* name) {
 }
 
 // visibility: if 0th bit (& 1) is set, ships in board1 are visible,
-// and if 1st bit (& 2) is set, ships in board2 are visible
+// and if 1st bit (& 2) is set, ships in board2 are visible.
+// Uses ANSI escape code to move cursor to right position.
 void print_boards(board_t* board1, board_t* board2, int visibility) {
     // print titles above the boards
-    printf("   %s's side", board1->name);
-    // uses ANSI escape code to move cursor to right position
-    printf("\x1B[%dG", 2 * GRID_SIZE + 18);
-    printf("%s's side", board2->name);
-    printf("\n");
+    printf("   %s's side\x1B[%dG%s's side\n", board1->name, 2 * GRID_SIZE + 18,
+           board2->name);
     // print stats - number of shots and hits
-    printf("   Progress: %d/%d", board1->hits, board1->shots);
-    // uses ANSI escape code to move cursor to right position
-    printf("\x1B[%dG", 2 * GRID_SIZE + 18);
-    printf("Progress: %d/%d", board2->hits, board2->shots);
-    printf("\n\n");
+    printf("   Progress: %d/%d\x1B[%dGProgress: %d/%d\n\n", board1->hits,
+           board1->shots, 2 * GRID_SIZE + 18, board2->hits, board2->shots);
     // print column numbers
     print_column_numbers();
     printf("%s", BOARDS_BORDERLINE);
     print_column_numbers();
-    printf("\n");
+    putchar('\n');
 
     // print the grids with separators
     for (int y = 0; y < GRID_SIZE; ++y) {
@@ -319,6 +339,8 @@ void print_boards(board_t* board1, board_t* board2, int visibility) {
     }
 }
 
+// Checks the tile at given coords.
+// Depending on the type, updates the board and returns the result of the shot.
 enum shot_result take_shot(board_t* board, int y, int x) {
     if (!is_inbounds(y, x)) { // out-of-bounds
         return SHOT_INVALID;
@@ -327,7 +349,7 @@ enum shot_result take_shot(board_t* board, int y, int x) {
     switch (board->grid[y][x]) {
     case TILE_WATER_HIT:
     case TILE_SHIP_HIT:
-        return SHOT_ALREADY; // already fired at
+        return SHOT_ALREADY;
     case TILE_WATER:
         board->grid[y][x] = TILE_WATER_HIT;
         board->shots += 1;
@@ -354,6 +376,7 @@ enum shot_result take_shot(board_t* board, int y, int x) {
     }
 }
 
+// Random coords generation until can shoot there.
 enum shot_result computer_take_shot(board_t* board) {
     int x, y;
     // keep generating random coords until can shoot

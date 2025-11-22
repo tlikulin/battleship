@@ -8,9 +8,9 @@
 
 // LOCAL:
 
-// The logos displayed in the main menu and the load menu.
+// The components of main and load menus.
 // Backslahes are to be escaped, so not aligned.
-// Originals are in extra/figlet.txt
+// (originals are in extra/figlet.txt)
 
 const char* BATTLESHIP_LOGO =
     " ____        _   _   _          _     _            \n"
@@ -37,6 +37,7 @@ const char* LOAD_MENU_CHOICES =
     "4.) Load a game \n"
     "5.) Return to main menu \n";
 
+// Used to represent whose turn it is along with clear transfer of turn.
 enum turn {
     TURN_NONE = 0,
     TURN_PLAYER,
@@ -47,15 +48,17 @@ enum turn {
 };
 
 // Main gameplay occurs here. Boards must be initialised before it is called.
-// This allows for new game and loaded games both using the same loop.
+// This allows both new game and loaded game to use the same loop.
 //
 // exit_app(1) in `default:` cases means that other enum variants shall never
-// be received there. It implies either memory corruption or changes to a
-// function broke this invariant and it should be fixed.
+// be received there. It implies either memory corruption occured or changes to
+// a function broke this invariant and it should be fixed.
 //
 // extra_message is used to store a response to turns, a variable is needed
 // because it is actually printed in the next iteration and between the boards
 // and input prompt.
+//
+// Invalid turn/input does not result in passing the turn to the opponent.
 void run_game(board_t* player_board, board_t* computer_board) {
     const char* extra_message = "\n";
     int y = -1, x = -1;
@@ -63,6 +66,7 @@ void run_game(board_t* player_board, board_t* computer_board) {
 
     // The main gameplay loop.
     // All conitnue`s inside refer to this while ("skip to next turn").
+    // The only way to exit it is to return from the function.
     while (1) {
         // Boards, stats, and extra message are printed in either case
         clear_screen();
@@ -72,7 +76,7 @@ void run_game(board_t* player_board, board_t* computer_board) {
         // Then it diverges based on whose turn it is.
         switch (whose_turn) {
         // Buffer turn to give the player a chance to see changes after each
-        // turn, otherwise all automatic turns would happen instantly.
+        // computer turn, otherwise all automatic turns would happen instantly.
         case TURN_PASSING:
             wait_enter();
             whose_turn = TURN_COMPUTER;
@@ -118,7 +122,7 @@ void run_game(board_t* player_board, board_t* computer_board) {
                 case SHOT_WIN:
                     clear_screen();
                     print_boards(player_board, computer_board, 1);
-                    printf("\nCongratulations! You win!\n");
+                    printf("\nCongratulations! You won!\n");
                     wait_enter();
                     return;
                 default:
@@ -153,7 +157,7 @@ void run_game(board_t* player_board, board_t* computer_board) {
             case SHOT_WIN:
                 clear_screen();
                 print_boards(player_board, computer_board, 1);
-                printf("\nOppenent wins! Better luck next time.\n");
+                printf("\nOppenent won! Better luck next time.\n");
                 wait_enter();
                 return;
             default:
@@ -170,6 +174,8 @@ void run_game(board_t* player_board, board_t* computer_board) {
 
 // EXPOSED in menu.c:
 
+// Displays logo and choice and asks for input.
+// Repeates until some valid choice is found.
 enum choice_main_menu run_main_menu(void) {
     int choice = CHOICE_MM_NONE;
 
@@ -188,12 +194,13 @@ enum choice_main_menu run_main_menu(void) {
     return choice;
 }
 
+// Displays logo and choice and asks for input.
+// Repeates until some valid choice is found.
 enum choice_load_menu run_load_menu(void) {
     int choice = CHOICE_LM_NONE;
 
     clear_screen();
-    printf("%s\n", LOAD_LOGO);
-    printf("%s", LOAD_MENU_CHOICES);
+    printf("%s\n%s", LOAD_LOGO, LOAD_MENU_CHOICES);
     choice = get_choice();
 
     while (choice < CHOICE_LM_LIST_ALL || choice > CHOICE_LM_RETURN) {
@@ -207,6 +214,9 @@ enum choice_load_menu run_load_menu(void) {
     return choice;
 }
 
+// Initializes player and computer boards.
+// Player is asked for the name; if it is invalid, falls back to default
+// "Player".
 void play_new_game(void) {
     board_t player_board, computer_board;
     char player_name[NAME_LEN + 1];
@@ -222,6 +232,7 @@ void play_new_game(void) {
     run_game(&player_board, &computer_board);
 }
 
+// Tries to load game with entered ID, it is played if successful.
 int play_saved_game(void) {
     board_t player_board, computer_board;
     printf("Enter the ID of the game to load.\n\n");
@@ -241,6 +252,7 @@ int play_saved_game(void) {
     }
 }
 
+// Tries to load game with entered ID, displays it if successful.
 void print_saved_board(void) {
     board_t player_board, computer_board;
     printf("\nEnter the ID of the game to load.\n");
@@ -258,6 +270,7 @@ void print_saved_board(void) {
     wait_enter();
 }
 
+// Reads each line of the savefile and displays summary.
 void print_all_saves(void) {
     board_t board1, board2;
     int id, status;
@@ -285,6 +298,8 @@ void print_all_saves(void) {
     wait_enter();
 }
 
+// Reads each line of the savefile and displays summary if the entered name
+// matches.
 void print_player_saves(void) {
     board_t board1, board2;
     char search_name[NAME_LEN + 1];

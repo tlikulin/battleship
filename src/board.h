@@ -1,18 +1,18 @@
 #pragma once
 
 /*
- * Declares types and functions related to the player's board.
+ * Declares types and functions related to the boards.
+ * I.e., initializing, displaying, taking shots at.
  */
 
-// should work in the range [?, 9]
+// The size of the boards, changing it would still require to amend the
+// number/size of ships, saving/loading part and (if it becomes 2 digits)
+// display of column numbers.
 #define GRID_SIZE 8
-// Ships: 5 4 3 2 2
-#define SHIPS_TOTAL 5
-extern const int SHIPS_SIZES[SHIPS_TOTAL];
-// the maximum number of characters allowed in the name field
+// The maximum number of characters allowed in the name field
 #define NAME_LEN 20
 
-// the values a tile can have
+// The values a tile can have, represented not as characters but IDs.
 enum tile_type {
     TILE_NONE = 0,
     TILE_WATER,
@@ -21,7 +21,8 @@ enum tile_type {
     TILE_SHIP_HIT
 };
 
-// a board storing a grid (2d array) of tiles
+// A board storing a grid (2d array) of tiles, name of the owner and statistics
+// (number of shots and hits on THIS board, not by the owner).
 typedef struct board {
     unsigned char grid[GRID_SIZE][GRID_SIZE];
     char name[NAME_LEN + 1];
@@ -29,7 +30,8 @@ typedef struct board {
     int shots, hits;
 } board_t;
 
-// represents the outcome of a shot; returned by take_shot()
+// Represents the outcome of a shot.
+// Returned by take_shot()/computer_take_shot()
 enum shot_result {
     SHOT_INVALID = 0,
     SHOT_ALREADY,
@@ -39,11 +41,15 @@ enum shot_result {
     SHOT_WIN
 };
 
-// initializes a board (clears and then populates with ships)
+// Initializes a board: clears and then populates with ships, copies name.
 void init_board(board_t* board, const char* name);
-// prints 2 boards side-to-side with provided titles (if any)
+// Prints 2 boards side-to-side with given visibility (determines whose
+// undiscovered ships can be seen).
 void print_boards(board_t* board1, board_t* board2, int visibility);
-// shoot at the board at given coords
-// returns the outcome (descibed at the enum)
+// Shoot at the board at given coords.
+// Returns the outcome (descibed at the enum).
 enum shot_result take_shot(board_t* board, int y, int x);
+// Let computer generate random (but valid) coords and shoot at it.
+// Returns the outcome (descibed at the enum), some values cannot be returned
+// from this function.
 enum shot_result computer_take_shot(board_t* board);

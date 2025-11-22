@@ -8,6 +8,8 @@
 
 // EXPOSED in saves.h:
 
+const char* SAVEFILE_NAME = "battleship-savefile.txt";
+
 // Reads a line from the file using getline() - must free.
 // Names (first 2 fields) are read byte by byte until a comma is found or name
 // becomes too long. The rest is scanned by sscanf().
@@ -19,10 +21,10 @@ int read_next_save(FILE* file, int* id, board_t* board1, board_t* board2) {
     char str_grid2[GRID_SIZE * GRID_SIZE + 1] = {0};
     char tile1, tile2;
 
-    // could not read from file
     if (file == NULL) {
         return -1;
     }
+
     bytes_read = getline(&line, &length, file);
     if (bytes_read == EOF) {
         free(line);
@@ -57,7 +59,7 @@ int read_next_save(FILE* file, int* id, board_t* board1, board_t* board2) {
     board2->name[offset2] = '\0'; // terminate name
     ++offset2;                    // consume comma
 
-    // Reading the rest of the saved game
+    // reading the rest of the saved game
     if (sscanf(line + offset1 + offset2, "%d,%d,%d,%d,%d,%d,%d,%64s,%64s", id,
                &board1->targets_left, &board1->hits, &board1->shots,
                &board2->targets_left, &board2->hits, &board2->shots, str_grid1,
@@ -68,6 +70,7 @@ int read_next_save(FILE* file, int* id, board_t* board1, board_t* board2) {
 
     free(line);
 
+    // copies grid tiles character by character
     for (int y = 0; y < GRID_SIZE; ++y) {
         for (int x = 0; x < GRID_SIZE; ++x) {
             tile1 = str_grid1[y * GRID_SIZE + x];
@@ -85,8 +88,7 @@ int read_next_save(FILE* file, int* id, board_t* board1, board_t* board2) {
     return 1;
 }
 
-const char* SAVEFILE_NAME = "battleship-savefile.txt";
-
+// Write everything to a buffer first, then writes the line to the file in 1 go.
 int save_game(board_t* board1, board_t* board2) {
     char line[512] = {0};
     int pos, id;
@@ -94,7 +96,7 @@ int save_game(board_t* board1, board_t* board2) {
     if (savefile == NULL) {
         return 0;
     }
-    do
+    do // accept positive numbers only
         id = rand();
     while (id < 1);
 
@@ -103,6 +105,7 @@ int save_game(board_t* board1, board_t* board2) {
                 id, board1->targets_left, board1->hits, board1->shots,
                 board2->targets_left, board2->hits, board2->shots);
 
+    // translates grid character by character
     for (int y = 0; y < GRID_SIZE; ++y) {
         for (int x = 0; x < GRID_SIZE; ++x) {
             line[pos++] = '0' + board1->grid[y][x];
@@ -126,6 +129,8 @@ int save_game(board_t* board1, board_t* board2) {
     }
 }
 
+// Reads saves into temporary variables. If right ID is found, copies temporary
+// values to provided pointers and finishes
 int load_game(int id, board_t* board1, board_t* board2) {
     board_t temp_board1, temp_board2;
     int status, temp_id;
