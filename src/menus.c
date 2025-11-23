@@ -71,7 +71,7 @@ void run_game(board_t* player_board, board_t* computer_board) {
         // Boards, stats, and extra message are printed in either case
         clear_screen();
         print_boards(player_board, computer_board, 1);
-        printf("\n");
+        putchar('\n');
         printf("%s", extra_message);
         // Then it diverges based on whose turn it is.
         switch (whose_turn) {
@@ -265,7 +265,7 @@ void print_saved_board(void) {
     } else {
         clear_screen();
         print_boards(&player_board, &computer_board, 1);
-        printf("\n");
+        putchar('\n');
     }
     wait_enter();
 }
@@ -294,7 +294,7 @@ void print_all_saves(void) {
     }
 
     fclose(savefile);
-    printf("\n");
+    putchar('\n');
     wait_enter();
 }
 
@@ -333,6 +333,6 @@ void print_player_saves(void) {
     }
 
     fclose(savefile);
-    printf("\n");
+    putchar('\n');
     wait_enter();
 }

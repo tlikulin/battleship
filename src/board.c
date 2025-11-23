@@ -101,11 +101,14 @@ int is_inbounds(int y, int x) {
 
 // The entire 3x3 area centered at the (x, y) is checked.
 int is_touching_ship(board_t* board, int y, int x) {
-    for (int dy = -1; dy <= 1; ++dy)
-        for (int dx = -1; dx <= 1; ++dx)
+    for (int dy = -1; dy <= 1; ++dy) {
+        for (int dx = -1; dx <= 1; ++dx) {
             if (is_inbounds(y + dy, x + dx) &&
-                board->grid[y + dy][x + dx] == TILE_SHIP)
+                board->grid[y + dy][x + dx] == TILE_SHIP) {
                 return 1;
+            }
+        }
+    }
 
     return 0;
 }
@@ -335,7 +338,7 @@ void print_boards(board_t* board1, board_t* board2, int visibility) {
         print_board_row(board1, y, visibility & 1);
         printf("%s", BOARDS_BORDERLINE);
         print_board_row(board2, y, visibility & 2);
-        printf("\n");
+        putchar('\n');
     }
 }
 

@@ -18,7 +18,6 @@ void wait_enter(void) {
     // to fix a problem with entering C-D
     if (feof(stdin)) {
         clearerr(stdin);
-        return;
     }
 
     do
@@ -140,6 +139,12 @@ int get_name(char* name) {
 
     // name must have [1;20] characters
     if (bytes_read == 0 || bytes_read > 20) {
+        free(line);
+        return 0;
+    }
+
+    // name "Computer" is prohibited to use by a real player
+    if (strcmp(line, "Computer") == 0) {
         free(line);
         return 0;
     }

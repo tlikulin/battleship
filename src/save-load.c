@@ -1,7 +1,6 @@
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
 #include "board.h"
 #include "save-load.h"
@@ -142,8 +141,8 @@ int load_game(int id, board_t* board1, board_t* board2) {
     while ((status = read_next_save(savefile, &temp_id, &temp_board1,
                                     &temp_board2)) != -1) {
         if (status == 1 && temp_id == id) {
-            memcpy(board1, &temp_board1, sizeof(board_t));
-            memcpy(board2, &temp_board2, sizeof(board_t));
+            *board1 = temp_board1;
+            *board2 = temp_board2;
             fclose(savefile);
             return 1;
         }
