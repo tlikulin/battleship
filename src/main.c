@@ -1,7 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+
+#if defined(__unix__) || defined(__unix)
 #include <unistd.h>
+#endif
 
 #include "menus.h"
 #include "utility.h"
@@ -28,11 +31,13 @@
 int main(void) {
     int is_in_load_menu = 0;
 
+#if defined(__unix__) || defined(__unix)
     // Forbid using the game non-interactively.
     if (!isatty(0)) {
         printf("This app is for interactive usage only (no pipe)\n");
         exit_app(1);
     }
+#endif
 
     // rand() is later used for generating IDs,
     // ships and computer shots.

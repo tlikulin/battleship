@@ -1,6 +1,7 @@
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "board.h"
 #include "save-load.h"
@@ -9,13 +10,14 @@
 
 const char* SAVEFILE_NAME = "battleship-savefile.txt";
 
-// Reads a line from the file using getline() - must free.
+#define BUFFER_SIZE 512
+
+// Reads a line from the file using fgets()
 // Names (first 2 fields) are read byte by byte until a comma is found or name
 // becomes too long. The rest is scanned by sscanf().
 int read_next_save(FILE* file, int* id, board_t* board1, board_t* board2) {
-    char* line = NULL;
-    size_t length = 0;
-    int bytes_read, offset1, offset2;
+    char line[BUFFER_SIZE];
+    int offset1, offset2;
     char str_grid1[GRID_SIZE * GRID_SIZE + 1] = {0};
     char str_grid2[GRID_SIZE * GRID_SIZE + 1] = {0};
     char tile1, tile2;
@@ -24,13 +26,10 @@ int read_next_save(FILE* file, int* id, board_t* board1, board_t* board2) {
         return -1;
     }
 
-    bytes_read = getline(&line, &length, file);
-    if (bytes_read == EOF) {
-        free(line);
+    if (fgets(line, BUFFER_SIZE, file) == NULL) {
         return -1;
         // line too short (a rough lower bound)
-    } else if (bytes_read < 2 * GRID_SIZE * GRID_SIZE + 10) {
-        free(line);
+    } else if (strlen(line) < 2 * GRID_SIZE * GRID_SIZE + 10) {
         return 0;
     }
 
@@ -38,7 +37,6 @@ int read_next_save(FILE* file, int* id, board_t* board1, board_t* board2) {
     for (offset1 = 0; line[offset1] != ','; ++offset1) {
         // name too long
         if (offset1 == NAME_LEN) {
-            free(line);
             return 0;
         }
 
@@ -49,7 +47,6 @@ int read_next_save(FILE* file, int* id, board_t* board1, board_t* board2) {
     for (offset2 = 0; line[offset1 + offset2] != ','; ++offset2) {
         // name too long
         if (offset2 == NAME_LEN) {
-            free(line);
             return 0;
         }
 
@@ -63,11 +60,8 @@ int read_next_save(FILE* file, int* id, board_t* board1, board_t* board2) {
                &board1->targets_left, &board1->hits, &board1->shots,
                &board2->targets_left, &board2->hits, &board2->shots, str_grid1,
                str_grid2) < 9) {
-        free(line);
         return 0;
     }
-
-    free(line);
 
     // copies grid tiles character by character
     for (int y = 0; y < GRID_SIZE; ++y) {

@@ -1,4 +1,4 @@
-CFLAGS=-Wall -Wextra -pedantic -std=c99 -D_POSIX_C_SOURCE=200809L
+CFLAGS=-Wall -Wextra -pedantic -std=c99
 SRCS=$(wildcard src/*.c)
 OBJS=$(patsubst src/%.c,src/%.o,$(SRCS))
 
