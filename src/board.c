@@ -63,6 +63,8 @@ void print_column_numbers(void);
 // Prints a row of the board with given index, includes letter at the beggining.
 // e.g. "C  | | | |s|O| | "
 void print_board_row(board_t* board, int y, int is_own);
+// Aditional check for computer which allows to play more effectively.
+int smart_check(board_t* board, int y, int x);
 
 // Uses ANSI escape codes to color different tile types distinctively.
 // is_own = should undiscovered ships be displayed
@@ -296,6 +298,34 @@ void print_board_row(board_t* board, int y, int is_own) {
     print_tile(board->grid[y][GRID_SIZE - 1], is_own);
 }
 
+// Does not check for validity, is not mandatory.
+// Also does not check if there exists an unfinished ship to tries to
+// shoot there.
+int smart_check(board_t* board, int y, int x) {
+    // do hot shoot if there is a ship diagonally - there can not be another
+    // ship
+    if ((is_inbounds(y - 1, x - 1) &&
+         board->grid[y - 1][x - 1] == TILE_SHIP_HIT) ||
+        (is_inbounds(y + 1, x - 1) &&
+         board->grid[y + 1][x - 1] == TILE_SHIP_HIT) ||
+        (is_inbounds(y - 1, x + 1) &&
+         board->grid[y - 1][x + 1] == TILE_SHIP_HIT) ||
+        (is_inbounds(y + 1, x + 1) &&
+         board->grid[y + 1][x + 1] == TILE_SHIP_HIT)) {
+        return 0;
+    }
+
+    // do not shoot if all 4 directly touching tiles are confirmed water or
+    // out-of-bounds - there are no 1x1 ships
+    if ((!is_inbounds(y - 1, x) || board->grid[y - 1][x] == TILE_WATER_HIT) &&
+        (!is_inbounds(y + 1, x) || board->grid[y + 1][x] == TILE_WATER_HIT) &&
+        (!is_inbounds(y, x - 1) || board->grid[y][x - 1] == TILE_WATER_HIT) &&
+        (!is_inbounds(y, x + 1) || board->grid[y][x + 1] == TILE_WATER_HIT)) {
+        return 0;
+    }
+    return 1;
+}
+
 // EXPOSED in board.h:
 
 // 1) fills with water;
@@ -386,7 +416,9 @@ enum shot_result computer_take_shot(board_t* board) {
     do {
         x = rand() % GRID_SIZE;
         y = rand() % GRID_SIZE;
-    } while (board->grid[y][x] != TILE_SHIP && board->grid[y][x] != TILE_WATER);
+    } while (
+        (board->grid[y][x] != TILE_SHIP && board->grid[y][x] != TILE_WATER) ||
+        !smart_check(board, y, x));
 
     return take_shot(board, y, x);
 }

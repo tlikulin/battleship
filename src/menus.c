@@ -276,7 +276,7 @@ void print_all_saves(void) {
     int id, status;
     FILE* savefile = fopen(SAVEFILE_NAME, "r");
     if (savefile == NULL) {
-        printf("Error: cannot find the savefile `%s`", SAVEFILE_NAME);
+        printf("Error: cannot find the savefile `%s`\n", SAVEFILE_NAME);
         wait_enter();
         return;
     }
@@ -306,7 +306,7 @@ void print_player_saves(void) {
     int id, status;
     FILE* savefile = fopen(SAVEFILE_NAME, "r");
     if (savefile == NULL) {
-        printf("Error: cannot find the savefile `%s`", SAVEFILE_NAME);
+        printf("Error: cannot find the savefile `%s`\n", SAVEFILE_NAME);
         wait_enter();
         return;
     }
