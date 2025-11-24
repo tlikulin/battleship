@@ -5,7 +5,7 @@ OBJS=$(patsubst src/%.c,src/%.o,$(SRCS))
 .PHONY: clean depend
 
 battleship: $(OBJS)
-	$(CC) -o bin/battleship $(OBJS) 
+	mkdir -p bin && $(CC) -o bin/battleship $(OBJS) 
 
 clean:
 	rm -f bin/battleship $(OBJS)

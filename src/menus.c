@@ -238,7 +238,7 @@ int play_saved_game(void) {
     printf("Enter the ID of the game to load.\n\n");
     int id = get_choice();
 
-    if (id == 0) {
+    if (id <= 0) {
         printf("Invalid ID: must be a positive integer\n");
         wait_enter();
         return 0;
@@ -258,7 +258,7 @@ void print_saved_board(void) {
     printf("\nEnter the ID of the game to load.\n");
     int id = get_choice();
 
-    if (id == 0) {
+    if (id <= 0) {
         printf("Invalid ID: must be a positive integer\n");
     } else if (load_game(id, &player_board, &computer_board) == 0) {
         printf("\nGame with this ID has not been found.\n");
